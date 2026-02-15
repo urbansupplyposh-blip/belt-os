@@ -126,7 +126,7 @@
             min-height: 100vh;
         }
 
-        /* Left Sidebar */
+        /* Left Sidebar - Hidden by default, only show in Workspaces */
         .sidebar {
             width: 260px;
             background: var(--bg-secondary);
@@ -140,6 +140,13 @@
             bottom: 0;
             left: 0;
             overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .sidebar.visible {
+            transform: translateX(0);
         }
 
         .sidebar-section {
@@ -199,12 +206,17 @@
         .agent-maria { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
         .agent-tim { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
 
-        /* Content Area */
+        /* Content Area - Full width by default */
         .content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: 0;
             padding: 24px;
             min-height: calc(100vh - 56px);
+            transition: margin-left 0.3s ease;
+        }
+
+        .content.with-sidebar {
+            margin-left: 260px;
         }
 
         .page-header {
@@ -1648,7 +1660,7 @@
     </div>
 
     <script>
-        // Tab switching
+        // Tab switching with sidebar visibility control
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 // Remove active from all tabs
@@ -1659,6 +1671,17 @@
                 tab.classList.add('active');
                 const tabId = tab.getAttribute('data-tab');
                 document.getElementById(tabId).classList.add('active');
+                
+                // Show sidebar only in Workspaces tab
+                const sidebar = document.querySelector('.sidebar');
+                const content = document.querySelector('.content');
+                if (tabId === 'workspaces') {
+                    sidebar.classList.add('visible');
+                    content.classList.add('with-sidebar');
+                } else {
+                    sidebar.classList.remove('visible');
+                    content.classList.remove('with-sidebar');
+                }
             });
         });
 
