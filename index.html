@@ -1693,3 +1693,431 @@
     </script>
 </body>
 </html>
+
+<!-- Enhanced Cost Dashboard Styles -->
+<style>
+.cost-dashboard {
+    display: grid;
+    gap: 20px;
+}
+
+.budget-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.budget-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.budget-amount {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--accent-gold);
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.budget-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.agent-usage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.usage-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.usage-agent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.usage-emoji {
+    font-size: 20px;
+}
+
+.usage-name {
+    font-weight: 600;
+}
+
+.usage-model {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.usage-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.usage-cost {
+    color: var(--accent-gold);
+    font-weight: 600;
+}
+
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--accent-green);
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.commit-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.commit-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-elevated);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.commit-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.commit-content {
+    flex: 1;
+}
+
+.commit-message {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.commit-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.quick-action {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.quick-action:hover {
+    border-color: var(--accent-gold);
+    background: var(--bg-elevated);
+}
+
+.quick-action i {
+    font-size: 24px;
+    color: var(--accent-gold);
+}
+
+.quick-action span {
+    font-size: 13px;
+    font-weight: 500;
+}
+</style>
+
+<!-- Enhanced JavaScript -->
+<script src="cost-monitor.js"></script>
+<script src="belt-api.js"></script>
+<script>
+// Initialize systems
+document.addEventListener('DOMContentLoaded', () => {
+    // Core systems
+    const costMonitor = new BeltOS.CostMonitor();
+    const sessionTracker = new BeltOS.SessionTracker();
+    const cronMonitor = new BeltOS.CronMonitor();
+    const api = new BeltAPI();
+    const github = new GitHubIntegration();
+    const imessage = new iMessageBridge();
+    
+    // Make globally accessible
+    window.costMonitor = costMonitor;
+    window.sessionTracker = sessionTracker;
+    window.cronMonitor = cronMonitor;
+    window.api = api;
+    
+    // Update cost dashboard
+    updateCostDashboard();
+    
+    // Start live polling
+    startLiveUpdates();
+    
+    // Load GitHub commits for Overnight Log
+    loadCommitFeed();
+    
+    // Add cost dashboard button to sidebar
+    addCostDashboardButton();
+});
+
+function updateCostDashboard() {
+    const container = document.getElementById('cost-dashboard-container');
+    if (container && window.costMonitor) {
+        container.innerHTML = window.costMonitor.renderDashboard();
+    }
+}
+
+function startLiveUpdates() {
+    // Update every 5 seconds
+    setInterval(() => {
+        // Simulate live session updates
+        const activeSessions = document.querySelectorAll('.session-item');
+        activeSessions.forEach(session => {
+            const dot = session.querySelector('.status-dot');
+            if (dot) {
+                dot.style.opacity = Math.random() > 0.5 ? '1' : '0.5';
+            }
+        });
+        
+        // Update cost display
+        updateCostDashboard();
+    }, 5000);
+    
+    // Agent status check every 30 seconds
+    if (window.api) {
+        window.api.startPolling((status) => {
+            console.log('Agent status:', status);
+            // Update agent status indicators
+            Object.keys(window.api.agents).forEach(agent => {
+                const el = document.querySelector(`[data-agent="${agent}"] .status-indicator`);
+                if (el) {
+                    el.className = status.agents.includes(agent) ? 'status-online' : 'status-offline';
+                }
+            });
+        }, 30000);
+    }
+}
+
+async function loadCommitFeed() {
+    const github = new GitHubIntegration();
+    const commits = await github.getRecentCommits('belt-os', 5);
+    
+    const feed = document.getElementById('commit-feed');
+    if (feed && commits.length > 0) {
+        feed.innerHTML = commits.map(c => `
+            <div class="commit-item">
+                <div class="commit-avatar">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <div class="commit-content">
+                    <div class="commit-message">${c.message}</div>
+                    <div class="commit-meta">
+                        ${c.id} by ${c.author} · ${new Date(c.date).toLocaleDateString()}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function addCostDashboardButton() {
+    // Add to sidebar
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+        const section = document.createElement('div');
+        section.className = 'sidebar-section';
+        section.innerHTML = `
+            <div class="sidebar-title">Analytics</div>
+            <div class="sidebar-item" onclick="showCostDashboard()">
+                <i class="fas fa-chart-line" style="color: var(--accent-gold);"></i>
+                <span>Cost Dashboard</span>
+            </div>
+            <div class="sidebar-item" onclick="showSessionHistory()">
+                <i class="fas fa-history" style="color: var(--accent-teal);"></i>
+                <span>Session History</span>
+            </div>
+        `;
+        sidebar.appendChild(section);
+    }
+}
+
+function showCostDashboard() {
+    // Switch to tasks tab and show cost view
+    document.querySelector('[data-tab="tasks"]').click();
+    
+    // Create cost view if not exists
+    let container = document.getElementById('cost-view');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'cost-view';
+        container.className = 'card';
+        container.style.marginTop = '24px';
+        container.innerHTML = `
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-dollar-sign" style="color: var(--accent-gold);"></i>
+                    Cost Dashboard
+                    <span class="live-indicator">
+                        <span class="live-dot"></span> LIVE
+                    </span>
+                </div>
+                <button class="btn btn-outline" onclick="resetDailyCosts()">
+                    <i class="fas fa-redo"></i> Reset Daily
+                </button>
+            </div>
+            <div class="card-body" id="cost-dashboard-container">
+                ${window.costMonitor ? window.costMonitor.renderDashboard() : 'Loading...'}
+            </div>
+        `;
+        document.getElementById('tasks').appendChild(container);
+    }
+    
+    // Scroll to it
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showSessionHistory() {
+    const sessions = window.sessionTracker ? window.sessionTracker.getRecentSessions(20) : [];
+    
+    // Create modal or expand section
+    let container = document.getElementById('session-history-view');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'session-history-view';
+        container.className = 'card';
+        container.style.marginTop = '24px';
+        document.getElementById('tasks').appendChild(container);
+    }
+    
+    container.innerHTML = `
+        <div class="card-header">
+            <div class="card-title">
+                <i class="fas fa-history" style="color: var(--accent-teal);"></i>
+                Session History
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="session-list">
+                ${sessions.length === 0 ? '<p style="color: var(--text-muted);">No sessions recorded yet.</p>' : 
+                    sessions.map(s => `
+                        <div class="session-item">
+                            <div class="session-header">
+                                <div class="session-title">
+                                    <span class="status-dot"></span>
+                                    ${s.title || 'Untitled Session'}
+                                </div>
+                                <span class="badge badge-${s.status === 'active' ? 'green' : 'amber'}">${s.status}</span>
+                            </div>
+                            <div class="session-meta">
+                                <span class="tag tag-model">${s.agent}</span>
+                                <span class="tag tag-ops">${s.type}</span>
+                            </div>
+                            <div class="session-stats">
+                                <span><i class="fas fa-coins"></i> ${(s.tokens/1000).toFixed(1)}K tokens</span>
+                                <span><i class="fas fa-dollar-sign"></i> $${s.cost.toFixed(4)}</span>
+                                <span><i class="fas fa-clock"></i> ${new Date(s.started).toLocaleTimeString()}</span>
+                            </div>
+                        </div>
+                    `).join('')
+                }
+            </div>
+        </div>
+    `;
+    
+    container.scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetDailyCosts() {
+    if (window.costMonitor) {
+        window.costMonitor.resetDaily();
+        updateCostDashboard();
+    }
+}
+
+// Add quick action handlers
+function quickTask() {
+    const title = prompt('Task name:');
+    if (title && window.sessionTracker) {
+        const session = window.sessionTracker.startSession(title, 'waul');
+        alert(`Session started: ${session.id}`);
+    }
+}
+
+function quickStandup() {
+    if (window.api) {
+        window.api.teamTask('Daily standup check-in').then(responses => {
+            console.log('Team responses:', responses);
+            alert('Standup initiated! Check console for responses.');
+        });
+    }
+}
+
+function quickDeploy() {
+    if (confirm('Deploy current changes to GitHub Pages?')) {
+        alert('Deployment triggered! (This would connect to your deploy pipeline)');
+    }
+}
+
+function quickReport() {
+    showCostDashboard();
+}
+</script>
