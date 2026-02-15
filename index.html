@@ -991,6 +991,50 @@
             border-bottom: 2px solid var(--accent-gold);
         }
 
+        /* Full Org Chart Styles */
+        .full-org-chart {
+            padding: 8px 0;
+        }
+
+        .org-section {
+            position: relative;
+        }
+
+        .vp-section {
+            background: var(--bg-elevated);
+            border-radius: 16px;
+            padding: 24px 32px 32px;
+            border: 1px solid var(--border-color);
+        }
+
+        .manager-column {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .org-card.subagent {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .org-card.subagent:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .manager-column {
+                padding: 16px;
+            }
+            
+            .vp-section {
+                padding: 16px;
+            }
+        }
+
         .view-btn {
             padding: 6px 12px;
             background: var(--bg-elevated);
@@ -1628,7 +1672,7 @@
                             <i class="fas fa-sitemap" style="color: var(--accent-gold);"></i>
                             Organization Chart
                         </div>
-                        <div class="page-subtitle">Multi-Manager Structure — Everyone Can Hire</div>
+                        <div class="page-subtitle">Full Team Hierarchy — 15 Agents · One View</div>
                     </div>
                     <div class="page-actions">
                         <button class="btn btn-outline" onclick="openSendMessageModal()"><i class="fas fa-paper-plane"></i> Send Message</button>
@@ -1670,203 +1714,185 @@
                     </div>
                 </div>
 
-                <!-- Manager Tabs -->
-                <div class="org-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
-                    <button class="org-tab active" data-manager="waul" onclick="selectManagerTab('waul')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-weight: 500;">
-                        <span style="font-size: 18px;">🦊</span> Waul's Team
-                    </button>
-                    <button class="org-tab" data-manager="bobby" onclick="selectManagerTab('bobby')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
-                        <span style="font-size: 18px;">📊</span> Bobby's Team
-                    </button>
-                    <button class="org-tab" data-manager="maria" onclick="selectManagerTab('maria')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
-                        <span style="font-size: 18px;">📝</span> Maria's Team
-                    </button>
-                    <button class="org-tab" data-manager="tim" onclick="selectManagerTab('tim')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
-                        <span style="font-size: 18px;">⚙️</span> Tim's Team
-                    </button>
-                    <button class="org-tab" data-manager="john" onclick="selectManagerTab('john')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
-                        <span style="font-size: 18px;">🎩</span> John's Team
-                    </button>
-                </div>
+                <!-- Full Org Chart -->
+                <div class="full-org-chart">
+                    
+                    <!-- VP Level -->
+                    <div class="org-section vp-section" style="margin-bottom: 48px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                            <div style="width: 40px; height: 2px; background: var(--accent-gold);"></div>
+                            <span style="color: var(--accent-gold); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Executive Level</span>
+                            <div style="flex: 1; height: 2px; background: var(--accent-gold);"></div>
+                        </div>
+                        <div class="org-level" style="justify-content: center;">
+                            <div class="org-card lead" style="min-width: 320px; border: 2px solid var(--accent-gold);">
+                                <div class="version-badge" style="background: var(--accent-gold); color: #000;">VP</div>
+                                <div class="org-avatar" style="background: rgba(99,102,241,0.2); width: 72px; height: 72px; font-size: 36px;">🎩</div>
+                                <div class="org-name" style="font-size: 20px;">John</div>
+                                <div class="org-role">Vice President · Final Gate</div>
+                                <div class="org-desc">Quality assurance · Final approval · Authority</div>
+                                <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                                    <span class="badge badge-purple" style="font-size: 11px;">Claude 4.6</span>
+                                    <span class="badge badge-amber" style="font-size: 11px;">~$45/use</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- John's Subagents -->
+                        <div class="org-level" style="margin-top: 24px;">
+                            <div class="org-card" style="border-left: 3px solid #6366f1;">
+                                <div class="version-badge">Rev 1.0</div>
+                                <div class="org-avatar" style="background: rgba(239,68,68,0.2);">🔎</div>
+                                <div class="org-name">Scope</div>
+                                <div class="org-role">Review Agent</div>
+                                <div class="org-desc">Final checks · Standards · Gate</div>
+                            </div>
+                            <div class="org-card" style="border-left: 3px solid #eab308;">
+                                <div class="version-badge">Rev 1.0</div>
+                                <div class="org-avatar" style="background: rgba(234,179,8,0.2);">📊</div>
+                                <div class="org-name">Score</div>
+                                <div class="org-role">Criteria Agent</div>
+                                <div class="org-desc">Rubrics · Metrics · Benchmarks</div>
+                            </div>
+                            <div class="org-card" style="border-left: 3px solid #14b8a6;">
+                                <div class="version-badge">Rev 1.0</div>
+                                <div class="org-avatar" style="background: rgba(20,184,166,0.2);">✅</div>
+                                <div class="org-name">Stamp</div>
+                                <div class="org-role">Approval Agent</div>
+                                <div class="org-desc">Sign-offs · Records · Archive</div>
+                            </div>
+                        </div>
+                    </div>
 
-                <!-- Waul's Team -->
-                <div class="manager-org" id="waul-org" style="display: block;">
-                    <div class="org-level">
-                        <div class="org-card lead">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🦊</div>
-                            <div class="org-name">Waul</div>
-                            <div class="org-role">Strategy Manager</div>
-                            <div class="org-desc">Coordinates all managers · Final decisions</div>
+                    <!-- Management Level -->
+                    <div class="org-section" style="margin-bottom: 48px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                            <div style="width: 40px; height: 2px; background: var(--accent-green);"></div>
+                            <span style="color: var(--accent-green); font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Management Level</span>
+                            <div style="flex: 1; height: 2px; background: var(--accent-green);"></div>
                         </div>
-                    </div>
-                    <div class="org-level">
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(139,92,246,0.2);">🎯</div>
-                            <div class="org-name">Focus</div>
-                            <div class="org-role">Priority Agent</div>
-                            <div class="org-desc">OKRs · Goals · Roadmaps</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(14,165,233,0.2);">💬</div>
-                            <div class="org-name">Relay</div>
-                            <div class="org-role">Comms Agent</div>
-                            <div class="org-desc">Standups · Updates · Alerts</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(99,102,241,0.2);">🤝</div>
-                            <div class="org-name">Bridge</div>
-                            <div class="org-role">Liaison Agent</div>
-                            <div class="org-desc">Cross-team sync · Handoffs</div>
-                        </div>
-                    </div>
-                </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                            
+                            <!-- Waul's Team -->
+                            <div class="manager-column">
+                                <div class="org-card lead" style="border: 2px solid rgba(245,158,11,0.4);">
+                                    <div class="version-badge" style="background: rgba(245,158,11,0.3);">🦊</div>
+                                    <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🦊</div>
+                                    <div class="org-name">Waul</div>
+                                    <div class="org-role">Strategy Manager</div>
+                                    <div class="org-desc">Coordinates all managers · Final decisions</div>
+                                    <div style="margin-top: 8px;"><span class="badge badge-amber" style="font-size: 11px;">kimi-k2.5</span></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(139,92,246,0.2); width: 40px; height: 40px; font-size: 20px;">🎯</div>
+                                        <div class="org-name" style="font-size: 14px;">Focus</div>
+                                        <div class="org-role" style="font-size: 11px;">OKRs · Goals · Roadmaps</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(14,165,233,0.2); width: 40px; height: 40px; font-size: 20px;">💬</div>
+                                        <div class="org-name" style="font-size: 14px;">Relay</div>
+                                        <div class="org-role" style="font-size: 11px;">Standups · Updates · Alerts</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(99,102,241,0.2); width: 40px; height: 40px; font-size: 20px;">🤝</div>
+                                        <div class="org-name" style="font-size: 14px;">Bridge</div>
+                                        <div class="org-role" style="font-size: 11px;">Cross-team sync · Handoffs</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Bobby's Team -->
-                <div class="manager-org" id="bobby-org" style="display: none;">
-                    <div class="org-level">
-                        <div class="org-card lead">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(59,130,246,0.2);">📊</div>
-                            <div class="org-name">Bobby</div>
-                            <div class="org-role">Analytics Manager</div>
-                            <div class="org-desc">Data truth · Insights · Reports</div>
-                        </div>
-                    </div>
-                    <div class="org-level">
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(20,184,166,0.2);">📈</div>
-                            <div class="org-name">Tracker</div>
-                            <div class="org-role">Metrics Agent</div>
-                            <div class="org-desc">KPIs · Dashboards · Trends</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(249,115,22,0.2);">🔍</div>
-                            <div class="org-name">Sift</div>
-                            <div class="org-role">Research Agent</div>
-                            <div class="org-desc">Data mining · Validation</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(236,72,153,0.2);">⚠️</div>
-                            <div class="org-name">Radar</div>
-                            <div class="org-role">Alert Agent</div>
-                            <div class="org-desc">Anomaly detection · Warnings</div>
-                        </div>
-                    </div>
-                </div>
+                            <!-- Bobby's Team -->
+                            <div class="manager-column">
+                                <div class="org-card lead" style="border: 2px solid rgba(59,130,246,0.4);">
+                                    <div class="version-badge" style="background: rgba(59,130,246,0.3);">📊</div>
+                                    <div class="org-avatar" style="background: rgba(59,130,246,0.2);">📊</div>
+                                    <div class="org-name">Bobby</div>
+                                    <div class="org-role">Analytics Manager</div>
+                                    <div class="org-desc">Data truth · Insights · Reports</div>
+                                    <div style="margin-top: 8px;"><span class="badge badge-green" style="font-size: 11px;">llama3.2 · FREE</span></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(20,184,166,0.2); width: 40px; height: 40px; font-size: 20px;">📈</div>
+                                        <div class="org-name" style="font-size: 14px;">Tracker</div>
+                                        <div class="org-role" style="font-size: 11px;">KPIs · Dashboards · Trends</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(249,115,22,0.2); width: 40px; height: 40px; font-size: 20px;">🔍</div>
+                                        <div class="org-name" style="font-size: 14px;">Sift</div>
+                                        <div class="org-role" style="font-size: 11px;">Data mining · Validation</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(236,72,153,0.2); width: 40px; height: 40px; font-size: 20px;">⚠️</div>
+                                        <div class="org-name" style="font-size: 14px;">Radar</div>
+                                        <div class="org-role" style="font-size: 11px;">Anomaly detection · Warnings</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Maria's Team -->
-                <div class="manager-org" id="maria-org" style="display: none;">
-                    <div class="org-level">
-                        <div class="org-card lead">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(236,72,153,0.2);">📝</div>
-                            <div class="org-name">Maria</div>
-                            <div class="org-role">Operations Manager</div>
-                            <div class="org-desc">Records · Docs · Deadlines</div>
-                        </div>
-                    </div>
-                    <div class="org-level">
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(168,85,247,0.2);">📋</div>
-                            <div class="org-name">Clerk</div>
-                            <div class="org-role">Records Agent</div>
-                            <div class="org-desc">Filing · Archives · Search</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(34,197,94,0.2);">📅</div>
-                            <div class="org-name">Clock</div>
-                            <div class="org-role">Schedule Agent</div>
-                            <div class="org-desc">Calendar · Reminders · Deadlines</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(251,191,36,0.2);">💰</div>
-                            <div class="org-name">Ledger</div>
-                            <div class="org-role">Finance Agent</div>
-                            <div class="org-desc">Budgets · Costs · Tracking</div>
-                        </div>
-                    </div>
-                </div>
+                            <!-- Maria's Team -->
+                            <div class="manager-column">
+                                <div class="org-card lead" style="border: 2px solid rgba(236,72,153,0.4);">
+                                    <div class="version-badge" style="background: rgba(236,72,153,0.3);">📝</div>
+                                    <div class="org-avatar" style="background: rgba(236,72,153,0.2);">📝</div>
+                                    <div class="org-name">Maria</div>
+                                    <div class="org-role">Operations Manager</div>
+                                    <div class="org-desc">Records · Docs · Deadlines</div>
+                                    <div style="margin-top: 8px;"><span class="badge badge-green" style="font-size: 11px;">llama3.2 · FREE</span></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(168,85,247,0.2); width: 40px; height: 40px; font-size: 20px;">📋</div>
+                                        <div class="org-name" style="font-size: 14px;">Clerk</div>
+                                        <div class="org-role" style="font-size: 11px;">Filing · Archives · Search</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(34,197,94,0.2); width: 40px; height: 40px; font-size: 20px;">📅</div>
+                                        <div class="org-name" style="font-size: 14px;">Clock</div>
+                                        <div class="org-role" style="font-size: 11px;">Calendar · Reminders · Deadlines</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(251,191,36,0.2); width: 40px; height: 40px; font-size: 20px;">💰</div>
+                                        <div class="org-name" style="font-size: 14px;">Ledger</div>
+                                        <div class="org-role" style="font-size: 11px;">Budgets · Costs · Tracking</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Tim's Team -->
-                <div class="manager-org" id="tim-org" style="display: none;">
-                    <div class="org-level">
-                        <div class="org-card lead">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(16,185,129,0.2);">⚙️</div>
-                            <div class="org-name">Tim</div>
-                            <div class="org-role">Engineering Manager</div>
-                            <div class="org-desc">Code · Systems · Infrastructure</div>
-                        </div>
-                    </div>
-                    <div class="org-level">
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(59,130,246,0.2);">🐛</div>
-                            <div class="org-name">Squash</div>
-                            <div class="org-role">Debug Agent</div>
-                            <div class="org-desc">Bug hunting · Fixes · Testing</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🚀</div>
-                            <div class="org-name">Ship</div>
-                            <div class="org-role">Deploy Agent</div>
-                            <div class="org-desc">CI/CD · Releases · Rollbacks</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(139,92,246,0.2);">🔐</div>
-                            <div class="org-name">Vault</div>
-                            <div class="org-role">Security Agent</div>
-                            <div class="org-desc">Auth · Secrets · Compliance</div>
-                        </div>
-                    </div>
-                </div>
+                            <!-- Tim's Team -->
+                            <div class="manager-column">
+                                <div class="org-card lead" style="border: 2px solid rgba(16,185,129,0.4);">
+                                    <div class="version-badge" style="background: rgba(16,185,129,0.3);">⚙️</div>
+                                    <div class="org-avatar" style="background: rgba(16,185,129,0.2);">⚙️</div>
+                                    <div class="org-name">Tim</div>
+                                    <div class="org-role">Engineering Manager</div>
+                                    <div class="org-desc">Code · Systems · Infrastructure</div>
+                                    <div style="margin-top: 8px;"><span class="badge badge-purple" style="font-size: 11px;">codex-5.2</span></div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(59,130,246,0.2); width: 40px; height: 40px; font-size: 20px;">🐛</div>
+                                        <div class="org-name" style="font-size: 14px;">Squash</div>
+                                        <div class="org-role" style="font-size: 11px;">Bug hunting · Fixes · Testing</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(245,158,11,0.2); width: 40px; height: 40px; font-size: 20px;">🚀</div>
+                                        <div class="org-name" style="font-size: 14px;">Ship</div>
+                                        <div class="org-role" style="font-size: 11px;">CI/CD · Releases · Rollbacks</div>
+                                    </div>
+                                    <div class="org-card subagent" style="padding: 16px;">
+                                        <div class="org-avatar" style="background: rgba(139,92,246,0.2); width: 40px; height: 40px; font-size: 20px;">🔐</div>
+                                        <div class="org-name" style="font-size: 14px;">Vault</div>
+                                        <div class="org-role" style="font-size: 11px;">Auth · Secrets · Compliance</div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- John's Team -->
-                <div class="manager-org" id="john-org" style="display: none;">
-                    <div class="org-level">
-                        <div class="org-card lead">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(99,102,241,0.2);">🎩</div>
-                            <div class="org-name">John</div>
-                            <div class="org-role">VP - Final Gate</div>
-                            <div class="org-desc">Quality · Decisions · Authority</div>
                         </div>
                     </div>
-                    <div class="org-level">
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(239,68,68,0.2);">🔎</div>
-                            <div class="org-name">Scope</div>
-                            <div class="org-role">Review Agent</div>
-                            <div class="org-desc">Final checks · Standards · Gate</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(234,179,8,0.2);">📊</div>
-                            <div class="org-name">Score</div>
-                            <div class="org-role">Criteria Agent</div>
-                            <div class="org-desc">Rubrics · Metrics · Benchmarks</div>
-                        </div>
-                        <div class="org-card">
-                            <div class="version-badge">Rev 1.0</div>
-                            <div class="org-avatar" style="background: rgba(20,184,166,0.2);">✅</div>
-                            <div class="org-name">Stamp</div>
-                            <div class="org-role">Approval Agent</div>
-                            <div class="org-desc">Sign-offs · Records · Archive</div>
-                        </div>
-                    </div>
+
                 </div>
             </div>
 
