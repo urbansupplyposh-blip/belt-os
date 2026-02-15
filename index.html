@@ -2581,7 +2581,7 @@
                 <div class="form-group">
                     <label>Select Agent</label>
                     <div class="agent-select-grid">
-                        <div class="agent-option active" data-agent="waul" onclick="selectAgent('waul')">
+                        <div class="agent-option active" data-agent="waul" onclick="selectSendAgent('waul')">
                             <span class="agent-option-emoji">🦊</span>
                             <div class="agent-option-info">
                                 <span class="agent-option-name">Waul</span>
@@ -2589,7 +2589,7 @@
                             </div>
                             <span class="agent-option-cost">~$0.001/call</span>
                         </div>
-                        <div class="agent-option" data-agent="bobby" onclick="selectAgent('bobby')">
+                        <div class="agent-option" data-agent="bobby" onclick="selectSendAgent('bobby')">
                             <span class="agent-option-emoji">📊</span>
                             <div class="agent-option-info">
                                 <span class="agent-option-name">Bobby</span>
@@ -2597,7 +2597,7 @@
                             </div>
                             <span class="agent-option-cost free">FREE</span>
                         </div>
-                        <div class="agent-option" data-agent="maria" onclick="selectAgent('maria')">
+                        <div class="agent-option" data-agent="maria" onclick="selectSendAgent('maria')">
                             <span class="agent-option-emoji">📝</span>
                             <div class="agent-option-info">
                                 <span class="agent-option-name">Maria</span>
@@ -2605,7 +2605,7 @@
                             </div>
                             <span class="agent-option-cost free">FREE</span>
                         </div>
-                        <div class="agent-option" data-agent="tim" onclick="selectAgent('tim')">
+                        <div class="agent-option" data-agent="tim" onclick="selectSendAgent('tim')">
                             <span class="agent-option-emoji">⚙️</span>
                             <div class="agent-option-info">
                                 <span class="agent-option-name">Tim</span>
@@ -3020,7 +3020,7 @@
             hideSendStatus();
         }
         
-        function selectAgent(agent) {
+        function selectSendAgent(agent) {
             selectedAgent = agent;
             document.querySelectorAll('.agent-option').forEach(opt => opt.classList.remove('active'));
             document.querySelector(`.agent-option[data-agent="${agent}"]`).classList.add('active');
@@ -5943,14 +5943,26 @@ document.addEventListener('DOMContentLoaded', () => {
     window.github = new GitHubIntegration();
     window.imessage = new iMessageBridge();
     
+    // Initialize Workspaces FIRST (doesn't need API)
+    initWorkspaces();
+    
+    // Initialize Org Chart tabs
+    initOrgChart();
+    
+    // Initialize Live Request Monitor
+    initLiveMonitor();
+    
+    // Load Cost Center data
+    refreshCostCenter();
+
     // Verify beltAPI is loaded
     if (!window.beltAPI) {
-        console.error('[BeltOS] CRITICAL: belt-api.js failed to initialize');
+        console.error('[BeltOS] CRITICAL: belt-api.js failed to initialize - Workspaces/CostCenter still work');
         const indicator = document.getElementById('agent-status-indicator');
         if (indicator) {
-            indicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-exclamation-circle"></i> API Error</span>';
+            indicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-exclamation-circle"></i> API Offline</span>';
         }
-        return;
+        // Don't return - let the rest of the page work
     }
     
     console.log('[BeltOS] BeltAPI initialized:', {
@@ -6013,14 +6025,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cronMonitor: !!window.cronMonitor
     });
     
-    // Initialize Workspaces
-    initWorkspaces();
-    
-    // Initialize Org Chart tabs
-    initOrgChart();
-    
-    // Initialize Live Request Monitor
-    initLiveMonitor();
 });
 
 // Initialize Org Chart
@@ -6377,15 +6381,7 @@ function renderCostCenter(data) {
 // Auto-refresh cost center every 5 minutes
 setInterval(refreshCostCenter, 300000);
 
-// Load on tab switch
-const origSwitchTab = document.querySelectorAll('.nav-tab');
-origSwitchTab.forEach(tab => {
-    tab.addEventListener('click', () => {
-        if (tab.dataset.tab === 'costs' && !costCenterData) {
-            refreshCostCenter();
-        }
-    });
-});
+// Cost center loaded during DOMContentLoaded init
 </script>
 </body>
 </html>
