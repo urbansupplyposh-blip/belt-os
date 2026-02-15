@@ -1911,37 +1911,148 @@
                             <i class="fas fa-book" style="color: var(--accent-gold);"></i>
                             Documentation
                         </div>
-                        <div class="page-subtitle">What is Belt OS?</div>
+                        <div class="page-subtitle">Understanding Belt OS</div>
                     </div>
                 </div>
 
-                <div class="card">
+                <div class="card" style="margin-bottom: 20px;">
                     <div class="card-body">
                         <div class="markdown-preview">
-                            <h1>What is Belt OS?</h1>
-                            <p>Belt OS is a multi-agent operating system for your business. It's a carbon copy of Muddy OS, rebuilt for the Belt team with all the same features and visual design.</p>
+                            <h1>Belt OS: Agent-Native Operating System</h1>
+                            <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.6;">
+                                Belt OS is a multi-agent command center designed for teams that work with AI agents as core contributors. 
+                                It provides unified visibility, cost control, and operational transparency across distributed agent systems 
+                                running on local and cloud infrastructure.
+                            </p>
                             
-                            <h2>Architecture</h2>
-                            <p>Belt OS runs on a hub-and-spoke model. <strong>Waul</strong> (Manager) coordinates everything, while <strong>Bobby</strong>, <strong>Maria</strong>, and <strong>Tim</strong> handle specialized tasks.</p>
+                            <h2>Core Philosophy</h2>
+                            <p>
+                                Traditional tools treat AI as simple chatbots. Belt OS treats agents as team members—each with a role, 
+                                personality, cost profile, and operational status. Just as you wouldn't manage human employees through 
+                                scattered Slack threads, you shouldn't manage agents through disconnected prompts.
+                            </p>
+                            <p>
+                                The system embraces <strong>agent-native workflows</strong>: agents coordinate with agents, report status through 
+                                structured interfaces, and maintain persistent identity through configuration files they can reference 
+                                across sessions.
+                            </p>
                             
-                            <h2>Features</h2>
-                            <p>• <strong>Task Manager</strong> - Monitor active sessions, cron jobs, and overnight logs<br>
-                            • <strong>Org Chart</strong> - Visualize your team hierarchy and agent status<br>
-                            • <strong>Standup</strong> - Executive meetings with transcript recording<br>
-                            • <strong>Workspaces</strong> - Edit agent configuration files (SOUL.md, etc.)<br>
-                            • <strong>Docs</strong> - System documentation and guides</p>
+                            <h2>System Architecture</h2>
+                            <p>
+                                Belt OS uses a hub-and-spoke coordination model with four specialized agents:
+                            </p>
                             
-                            <h2>Cost Structure</h2>
-                            <p>• Bobby & Maria: <strong>FREE</strong> (local Ollama)<br>
-                            • Waul: ~$0.001/call (Kimi cloud)<br>
-                            • Tim: ~$0.003/call (Codex 5.2)<br>
-                            • Projected daily cost: <strong>Under $0.50</strong></p>
+                            <h3>🦊 Waul — Strategic Coordinator</h3>
+                            <p>
+                                The manager agent orchestrates cross-functional work. Waul runs on Kimi k2.5 cloud for high-quality 
+                                strategic reasoning (~$0.001/call). He coordinates Bobby's analysis, Maria's documentation, and Tim's 
+                                technical implementation. Waul maintains the "big picture" and ensures agents aren't working at cross-purposes.
+                            </p>
                             
-                            <h2>Technology Stack</h2>
-                            <p>Belt OS is built with pure HTML/CSS/JavaScript - no frameworks, no build process. It deploys directly to GitHub Pages and works on any device.</p>
+                            <h3>📊 Bobby — Data Intelligence</h3>
+                            <p>
+                                The analyst agent operates on local Llama 3.2 at zero marginal cost. Bobby tracks cost metrics, 
+                                detects anomalies in agent behavior, and provides data-backed assessments of system performance. 
+                                His skepticism prevents the team from believing their own hype.
+                            </p>
+                            
+                            <h3>📝 Maria — Operational Continuity</h3>
+                            <p>
+                                The bookkeeper agent also runs local Llama 3.2 (free). Maria maintains documentation, tracks deadlines, 
+                                and notices when things fall through cracks. She provides the organizational memory that prevents 
+                                distributed teams from losing context.
+                            </p>
+                            
+                            <h3>⚙️ Tim — Technical Execution</h3>
+                            <p>
+                                The engineering agent runs on Codex 5.2 for complex technical reasoning (~$0.003/call). Tim handles 
+                                code review, architecture decisions, deployment pipelines, and technical debt management. He provides 
+                                the technical foundation that lets other agents focus on their specialties.
+                            </p>
+                            
+                            <h2>Operational Model</h2>
+                            
+                            <h3>Cost Transparency</h3>
+                            <p>
+                                Every API call is tracked with token counts and cost attribution. The system maintains a $1.00/day 
+                                budget with real-time burn tracking. Cost optimization is automatic—Bobby and Maria run locally at 
+                                zero cost, while Waul and Tim's cloud usage is carefully monitored and optimized.
+                            </p>
+                            
+                            <h3>Session Persistence</h3>
+                            <p>
+                                Agent state survives page reloads through localStorage and structured workspace files. Each agent 
+                                maintains SOUL.md (personality), IDENTITY.md (voice), MEMORY.md (context), and HEARTBEAT.md 
+                                (periodic tasks). This persistence model lets agents resume work without losing context.
+                            </p>
+                            
+                            <h3>Communication Patterns</h3>
+                            <p>
+                                Agents communicate through structured APIs at localhost:8087 (Waul's Brain). Messages follow a 
+                                request-response pattern with automatic retry logic (3 attempts, exponential backoff). Team-wide 
+                                broadcasts are supported for standups and alerts.
+                            </p>
+                            
+                            <h2>Interface Components</h2>
+                            
+                            <p>• <strong>Task Manager</strong> — Real-time session monitoring, cron job status, overnight processing logs, and cost dashboards with live budget tracking</p>
+                            
+                            <p>• <strong>Org Chart</strong> — Visual hierarchy showing agent relationships, model assignments, cost structures, and operational status with health indicators</p>
+                            
+                            <p>• <strong>Standup</strong> — Executive meeting transcripts with speaker attribution, time-stamped entries, and automatic summary generation</p>
+                            
+                            <p>• <strong>Workspaces</strong> — File browser for agent configuration with syntax highlighting, preview/edit toggle, and document versioning</p>
+                            
+                            <p>• <strong>API Test Panel</strong> — Connection diagnostics, request/response logging, and health monitoring for distributed agent endpoints</p>
+                            
+                            <h2>Technical Implementation</h2>
+                            
+                            <h3>Deployment Architecture</h3>
+                            <p>
+                                Belt OS deploys as a static site to GitHub Pages. The entire system is contained in a single HTML 
+                                file with embedded CSS and JavaScript—no build process, no dependencies, no server required. 
+                                This architecture ensures maximum portability and minimal maintenance.
+                            </p>
+                            
+                            <h3>Data Model</h3>
+                            <p>
+                                Client-side persistence through localStorage maintains cost history, session logs, and user preferences. 
+                                Agent configuration files are embedded directly in the application for offline availability. 
+                                GitHub integration provides commit tracking and deployment monitoring.
+                            </p>
+                            
+                            <h3>Mobile-First Design</h3>
+                            <p>
+                                The interface uses responsive breakpoints, viewport-fit for iOS notch handling, and touch-optimized 
+                                controls. Dark theme with gold accents reduces eye strain during extended operations. 
+                                All functionality works on mobile browsers without app installation.
+                            </p>
+                            
+                            <h2>Security & Boundaries</h2>
+                            <p>
+                                Belt OS respects the boundary between internal and external actions. The system can monitor, 
+                                analyze, and coordinate freely—but external communications (emails, posts, messages) require 
+                                explicit human approval. Private data stays private; no exfiltration to external services except 
+                                the configured agent endpoints.
+                            </p>
+                            
+                            <h2>Future Development</h2>
+                            
+                            <p>• <strong>Voice Standups</strong> — Record and transcribe audio standup reports from mobile</p>
+                            <p>• <strong>iMessage Integration</strong> — Two-way messaging bridge for urgent alerts</p>
+                            <p>• <strong>Advanced Cron</strong> — Scheduled agent tasks with dependency chaining</p>
+                            <p>• <strong>Multi-Team Support</strong> — Scale beyond the Belt team to multiple organizations</p>
                             
                             <h2>Getting Started</h2>
-                            <p>Access Belt OS from any device at your GitHub Pages URL. The interface adapts to mobile, tablet, and desktop screens. All data stays in your workspace files.</p>
+                            <p>
+                                Access Belt OS from any modern browser at your GitHub Pages URL. The system requires no installation, 
+                                no account creation, and no external API keys (except your existing agent endpoints at localhost:8087). 
+                                All data stays on your device. The interface adapts automatically to mobile, tablet, and desktop screens.
+                            </p>
+                            <p>
+                                For new deployments, simply fork the repository, enable GitHub Pages, and configure your agent 
+                                endpoints. The system self-initializes on first load and maintains state across sessions.
+                            </p>
                         </div>
                     </div>
                 </div>
