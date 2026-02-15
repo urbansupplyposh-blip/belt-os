@@ -1,0 +1,101 @@
+{
+  "timestamp": "2026-02-15T05:28:38Z",
+  "localTime": "2026-02-15 00:28:38 ",
+  "collectors": {
+    "version": "1.0",
+    "interval": "5m",
+    "last_run": "2026-02-15T05:28:38Z"
+  },
+  "providers": {
+    "openrouter": {
+      "status": "error",
+      "raw": {
+        "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)>"
+      }
+    },
+    "anthropic": {
+      "status": "active",
+      "key_prefix": "sk-ant-api03-YR...",
+      "model": "claude-opus-4-6",
+      "estimated_cost_per_call": 0.045,
+      "note": "Anthropic doesn't expose usage via API - tracked locally"
+    },
+    "ollama": {
+      "status": "running",
+      "models": [
+        {
+          "name": "llama3.2:latest",
+          "size_gb": 2.02,
+          "family": "llama",
+          "parameters": "3.2B",
+          "quantization": "Q4_K_M"
+        },
+        {
+          "name": "kimi-k2.5:cloud",
+          "size_gb": 0.0,
+          "family": "",
+          "parameters": "",
+          "quantization": ""
+        }
+      ],
+      "count": 2,
+      "cost": 0
+    }
+  },
+  "agents": {
+    "waul": {
+      "model": "ollama/kimi-k2.5:cloud",
+      "provider": "ollama",
+      "cost_per_call": 0,
+      "status": "active"
+    },
+    "bobby": {
+      "model": "ollama/llama3.2:latest",
+      "provider": "ollama",
+      "cost_per_call": 0,
+      "status": "active"
+    },
+    "maria": {
+      "model": "ollama/llama3.2:latest",
+      "provider": "ollama",
+      "cost_per_call": 0,
+      "status": "active"
+    },
+    "tim": {
+      "model": "openrouter/openai/codex-5.2",
+      "provider": "openrouter",
+      "cost_per_call": 0.003,
+      "status": "active"
+    },
+    "john": {
+      "model": "anthropic/claude-opus-4-6",
+      "provider": "anthropic",
+      "cost_per_call": 0.045,
+      "status": "standby"
+    }
+  },
+  "summary": {
+    "total_providers": 3,
+    "total_agents": 5,
+    "free_agents": [
+      "waul",
+      "bobby",
+      "maria"
+    ],
+    "paid_agents": [
+      "tim",
+      "john"
+    ],
+    "ollama_status": "running",
+    "openrouter_credits": "N/A",
+    "anthropic_status": "active"
+  },
+  "history": [
+    {
+      "timestamp": "2026-02-15T05:28:38Z",
+      "or_credits": 0,
+      "or_used": 0,
+      "ollama_models": 2
+    }
+  ]
+}
