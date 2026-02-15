@@ -5634,76 +5634,7 @@ function selectFile(filename) {
     }
 }
 
-function selectAgentOld(agent) {
-    currentAgent = agent;
-    
-    // Update UI
-    document.querySelectorAll('#agent-list .file-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector(`#agent-list .file-item[data-agent="${agent}"]`).classList.add('active');
-    
-    // Update file list icons and badge
-    const agentData = workspaceDocs[agent];
-    document.getElementById('file-badge').textContent = agentData.name;
-    document.getElementById('file-badge').style.background = agentData.color;
-    
-    // Refresh file display
-    selectFile(currentFile);
-}
 
-function selectFile(filename) {
-    currentFile = filename;
-    
-    // Update UI
-    document.querySelectorAll('#file-list .file-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    document.querySelector(`#file-list .file-item[data-file="${filename}"]`).classList.add('active');
-    
-    // Update header
-    const agentData = workspaceDocs[currentAgent];
-    const fileIcon = fileIcons[filename];
-    document.getElementById('file-header').innerHTML = \`
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <i class="fas \${fileIcon.icon}" style="color: \${fileIcon.color};"></i>
-            <span style="font-weight: 600;">\${filename}</span>
-            <span style="color: var(--text-muted); font-size: 13px;">• agents/\${currentAgent}/</span>
-        </div>
-        <div style="display: flex; gap: 8px;">
-            <span class="badge badge-amber" style="background: \${agentData.color};">\${agentData.name}</span>
-        </div>
-    \`;
-    
-    // Load and render content
-    const content = workspaceDocs[currentAgent].files[filename];
-    renderMarkdown(content);
-}
-
-function renderMarkdown(markdown) {
-    // Simple markdown renderer
-    let html = markdown
-        .replace(/^# (.*$)/gim, '<h1 style="color: var(--accent-gold); margin-bottom: 16px;">$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2 style="color: var(--text-primary); margin: 20px 0 12px; font-size: 18px;">$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3 style="color: var(--text-secondary); margin: 16px 0 8px; font-size: 15px;">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--text-primary);">$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/^\* (.*$)/gim, '<li style="margin: 6px 0; color: var(--text-secondary);">$1</li>')
-        .replace(/<\/li>\n<li>/g, '</li><li>')
-        .replace(/^(?!<[h|l])(.*$)/gim, '<p style="margin: 8px 0; color: var(--text-secondary); line-height: 1.6;">$1</p>')
-        .replace(/\n/g, '');
-    
-    // Wrap consecutive li elements in ul
-    html = html.replace(/(<li>.*<\/li>)+/g, '<ul style="margin: 12px 0; padding-left: 20px;">$&</ul>');
-    
-    // Handle code blocks
-    html = html.replace(/\`\`\`([\s\S]*?)\`\`\`/g, '<pre style="background: var(--bg-card); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 12px 0;"><code style="color: var(--text-secondary); font-family: monospace; font-size: 13px;">$1</code></pre>');
-    
-    document.getElementById('file-content').innerHTML = html;
-}
-
-function refreshWorkspaces() {
-    selectFile(currentFile);
     showNotification('Workspaces refreshed');
 }
 
