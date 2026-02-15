@@ -1040,6 +1040,11 @@
                         <div class="page-subtitle">Monitor sessions, send messages, and track costs</div>
                     </div>
                     <div class="page-actions">
+                        <span id="agent-status-indicator" style="margin-right: 8px;">
+                            <span class="connection-status checking">
+                                <i class="fas fa-circle"></i> Checking...
+                            </span>
+                        </span>
                         <button class="btn btn-primary" onclick="openSendMessageModal()">
                             <i class="fas fa-paper-plane"></i> Send Message
                         </button>
@@ -2163,36 +2168,58 @@
             showSendStatus('Sending message...', 'sending');
             
             try {
-                if (window.api) {
+                if (window.beltAPI) {
                     let result;
                     
                     if (sendToTeam) {
-                        result = await window.api.teamTask(message);
+                        result = await window.beltAPI.teamTask(message);
                         const successful = result.filter(r => !r.error).length;
-                        showSendStatus(`Message sent to ${successful}/${result.length} agents successfully!`, 'success');
+                        const failed = result.length - successful;
+                        const totalCost = result.reduce((sum, r) => sum + (r.cost || 0), 0);
+                        
+                        if (failed === 0) {
+                            showSendStatus(`✓ Message sent to all ${successful} agents! Cost: $${totalCost.toFixed(4)}`, 'success');
+                        } else {
+                            showSendStatus(`⚠ ${successful} succeeded, ${failed} failed. Cost: $${totalCost.toFixed(4)}`, 'error');
+                        }
+                        
+                        // Log team results
+                        result.forEach(r => {
+                            const status = r.error ? 'FAILED' : 'SUCCESS';
+                            console.log(`[Team Task] ${r.agent}: ${status}`, r);
+                        });
                     } else {
-                        result = await window.api.sendMessage(selectedAgent, message);
+                        result = await window.beltAPI.sendMessage(selectedAgent, message);
                         if (result.error) {
                             showSendStatus(`Error: ${result.error}`, 'error');
                         } else {
-                            showSendStatus(`Message sent to ${selectedAgent}! Cost: $${result.metadata.cost.toFixed(4)}`, 'success');
+                            showSendStatus(`✓ ${selectedAgent} responded in ${result.duration}ms • ${result.tokens} tokens • $${result.cost?.toFixed(4) || '0.0000'}`, 'success');
                         }
                     }
                     
-                    // Update session tracking
-                    if (window.sessionTracker) {
-                        window.sessionTracker.updateSession(result.session?.id || Date.now(), result.metadata?.tokens || 0, result.metadata?.cost || 0);
+                    // Update cost tracking if available
+                    if (window.costMonitor && result.tokens) {
+                        const agent = sendToTeam ? 'team' : selectedAgent;
+                        const cost = window.costMonitor.recordCall(agent, result.tokens);
+                        console.log(`[Cost] Recorded $${cost?.toFixed(4)} for ${agent}`);
                     }
                     
+                    // Refresh session history display
+                    refreshSessionHistory();
+                    
                     // Clear input after success
-                    setTimeout(() => {
-                        document.getElementById('messageInput').value = '';
-                    }, 500);
+                    if (!result.error) {
+                        setTimeout(() => {
+                            document.getElementById('messageInput').value = '';
+                        }, 1000);
+                    }
                 } else {
-                    showSendStatus('API not initialized', 'error');
+                    showSendStatus('API not initialized - check belt-api.js is loaded', 'error');
+                    console.error('window.beltAPI is not available');
                 }
             } catch (e) {
                 showSendStatus(`Error: ${e.message}`, 'error');
+                console.error('sendAgentMessage error:', e);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
@@ -2211,45 +2238,95 @@
         }
         
         async function testAgentConnection(agent) {
-            if (!window.api) {
-                addApiLog('error', 'API not initialized');
+            if (!window.beltAPI) {
+                addApiLog('error', 'BeltAPI not initialized');
                 return;
             }
             
             addApiLog('info', `Testing connection to ${agent}...`);
-            const result = await window.api.testConnection(agent);
             
-            if (result.success) {
-                addApiLog('info', `✓ ${agent} connection successful (${result.result.metadata.duration}ms)`);
+            // Send a test ping message
+            const startTime = performance.now();
+            const result = await window.beltAPI.sendMessage(agent, 'ping', { test: true });
+            const duration = Math.round(performance.now() - startTime);
+            
+            if (result.error) {
+                addApiLog('error', `✗ ${agent} connection failed: ${result.error} (${duration}ms)`);
             } else {
-                addApiLog('error', `✗ ${agent} connection failed: ${result.result.error}`);
+                addApiLog('info', `✓ ${agent} connected • ${duration}ms • ${result.tokens || 0} tokens`);
             }
             
             refreshSessionHistory();
+            updateAgentStatusIndicator();
         }
         
         async function testAllConnections() {
-            if (!window.api) {
-                addApiLog('error', 'API not initialized');
+            if (!window.beltAPI) {
+                addApiLog('error', 'BeltAPI not initialized');
                 return;
             }
             
             addApiLog('info', 'Testing all agent connections...');
             
-            const agents = Object.keys(window.api.agents);
-            const results = [];
+            // Use the new testConnections method
+            const results = await window.beltAPI.testConnections();
             
-            for (const agent of agents) {
-                const result = await window.api.testConnection(agent);
-                results.push({ agent, ...result });
+            let onlineCount = 0;
+            let totalLatency = 0;
+            
+            for (const [agent, status] of Object.entries(results)) {
+                if (status.online) {
+                    onlineCount++;
+                    totalLatency += status.latency || 0;
+                    addApiLog('info', `✓ ${agent}: ONLINE (${status.latency}ms)`);
+                } else {
+                    addApiLog('error', `✗ ${agent}: OFFLINE - ${status.error || 'Unknown error'}`);
+                }
             }
             
-            // Generate health report
-            const report = window.api.getHealthReport();
-            renderHealthReport(report);
+            const avgLatency = onlineCount > 0 ? Math.round(totalLatency / onlineCount) : 0;
+            const successRate = Math.round((onlineCount / Object.keys(results).length) * 100);
             
-            addApiLog('info', `All tests complete. Success rate: ${report.successRate}%`);
+            addApiLog('info', `Health check complete: ${onlineCount}/${Object.keys(results).length} online (${successRate}%) • Avg latency: ${avgLatency}ms`);
+            
+            // Update health report display
+            const sessions = window.beltAPI.getSessionHistory();
+            const totalCost = sessions.reduce((sum, s) => sum + (s.cost || 0), 0);
+            const recentErrors = sessions.filter(s => s.status === 'failed').slice(0, 5);
+            
+            renderHealthReport({
+                totalSessions: sessions.length,
+                successful: sessions.filter(s => s.status === 'success').length,
+                failed: sessions.filter(s => s.status === 'failed').length,
+                successRate: sessions.length > 0 
+                    ? Math.round((sessions.filter(s => s.status === 'success').length / sessions.length) * 100)
+                    : 0,
+                totalCost: totalCost.toFixed(4),
+                agents: Object.entries(window.beltAPI.agents).map(([name, config]) => ({
+                    name,
+                    emoji: config.emoji,
+                    sessions: sessions.filter(s => s.agent === name).length
+                })),
+                recentErrors: recentErrors.map(s => ({ agent: s.agent, message: s.error }))
+            });
+            
             refreshSessionHistory();
+            updateAgentStatusIndicator();
+        }
+        
+        // Update agent status indicator in the header
+        async function updateAgentStatusIndicator() {
+            const indicator = document.getElementById('agent-status-indicator');
+            if (!indicator || !window.beltAPI) return;
+            
+            const status = await window.beltAPI.checkStatus();
+            
+            if (status.online) {
+                const agentCount = status.agents?.length || 4;
+                indicator.innerHTML = `<span class="connection-status online"><i class="fas fa-circle"></i> ${agentCount} Agents Online</span>`;
+            } else {
+                indicator.innerHTML = `<span class="connection-status offline"><i class="fas fa-circle"></i> Agents Offline</span>`;
+            }
         }
         
         function renderHealthReport(report) {
@@ -2307,10 +2384,10 @@
         }
         
         function refreshApiLogs() {
-            if (!window.api) return;
+            if (!window.beltAPI) return;
             
             const container = document.getElementById('apiLogsContainer');
-            const logs = window.api.getLogs(null, 20);
+            const logs = window.beltAPI.getLogs(null, 20);
             
             if (logs.length === 0) return;
             
@@ -2324,8 +2401,8 @@
         }
         
         function clearApiLogs() {
-            if (window.api) {
-                window.api.clearLogs();
+            if (window.beltAPI) {
+                window.beltAPI.clearLogs();
             }
             document.getElementById('apiLogsContainer').innerHTML = `
                 <div class="log-entry">
@@ -2337,10 +2414,10 @@
         }
         
         function refreshSessionHistory() {
-            if (!window.api) return;
+            if (!window.beltAPI) return;
             
             const container = document.getElementById('apiSessionHistory');
-            const sessions = window.api.getSessionHistory(null, 10);
+            const sessions = window.beltAPI.getSessionHistory(null, 10);
             
             if (sessions.length === 0) {
                 container.innerHTML = '<p style="color: var(--text-muted);">No sessions yet. Send a message to see history.</p>';
@@ -2862,29 +2939,47 @@ function quickReport() {
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize core systems
-    window.api = new BeltAPI();
+    // beltAPI is auto-initialized by belt-api.js (window.beltAPI)
     window.costMonitor = new CostMonitor();
     window.sessionTracker = new SessionTracker();
     window.cronMonitor = new CronMonitor();
     window.github = new GitHubIntegration();
     window.imessage = new iMessageBridge();
     
-    // Wire up cost tracking with API
-    window.api.onUpdate = (logs) => {
-        // Refresh cost display when API updates
-        if (document.getElementById('cost-dashboard-container')) {
-            updateCostDashboard();
+    // Verify beltAPI is loaded
+    if (!window.beltAPI) {
+        console.error('[BeltOS] CRITICAL: belt-api.js failed to initialize');
+        const indicator = document.getElementById('agent-status-indicator');
+        if (indicator) {
+            indicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-exclamation-circle"></i> API Error</span>';
         }
-    };
+        return;
+    }
+    
+    console.log('[BeltOS] BeltAPI initialized:', {
+        baseURL: window.beltAPI.baseURL,
+        agents: Object.keys(window.beltAPI.agents),
+        config: window.beltAPI.getConfig()
+    });
     
     // Set up polling for agent status
     const statusIndicator = document.getElementById('agent-status-indicator');
-    if (statusIndicator) {
-        window.api.startPolling((status) => {
+    if (statusIndicator && window.beltAPI) {
+        // Immediate check
+        window.beltAPI.checkStatus().then(status => {
+            if (status.online) {
+                statusIndicator.innerHTML = `<span class="connection-status online"><i class="fas fa-circle"></i> ${status.agents?.length || 4} Agents Online</span>`;
+            } else {
+                statusIndicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-circle"></i> Agents Offline</span>';
+            }
+        });
+        
+        // Start polling
+        window.beltAPI.startPolling((status) => {
             if (status.status === 'offline') {
                 statusIndicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-circle"></i> Agents Offline</span>';
             } else {
-                statusIndicator.innerHTML = `<span class="connection-status online"><i class="fas fa-circle"></i> ${status.agents?.length || 0} Agents Online</span>`;
+                statusIndicator.innerHTML = `<span class="connection-status online"><i class="fas fa-circle"></i> ${status.agents?.length || 4} Agents Online</span>`;
             }
         }, 30000);
     }
@@ -2892,15 +2987,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial cost dashboard update
     setTimeout(() => {
         updateCostDashboard();
-        if (window.api) {
-            console.log('[BeltOS] API initialized. Use window.api to access the BeltAPI instance.');
-            console.log('[BeltOS] Example: window.api.sendMessage("waul", "Hello")');
-        }
+        
+        // Log available commands
+        console.log('[BeltOS] Commands available:');
+        console.log('  window.beltAPI.sendMessage(agent, message) - Send message to agent');
+        console.log('  window.beltAPI.teamTask(task) - Send to all agents');
+        console.log('  window.beltAPI.testConnections() - Test all connections');
+        console.log('  window.beltAPI.getSessionHistory() - View session history');
+        console.log('  window.beltAPI.getLogs() - View API logs');
+        console.log('  window.costMonitor.getTodayTotal() - View today\'s cost');
     }, 100);
     
-    // Periodic updates
+    // Periodic visual updates for active sessions
     setInterval(() => {
-        // Update active session indicators
         const activeSessions = document.querySelectorAll('.session-item');
         activeSessions.forEach(session => {
             const dot = session.querySelector('.status-dot');
@@ -2911,7 +3010,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 5000);
     
     console.log('[BeltOS] Initialized:', {
-        api: !!window.api,
+        beltAPI: !!window.beltAPI,
         costMonitor: !!window.costMonitor,
         sessionTracker: !!window.sessionTracker,
         cronMonitor: !!window.cronMonitor

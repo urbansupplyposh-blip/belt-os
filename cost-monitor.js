@@ -5,7 +5,8 @@ class CostMonitor {
             waul: { name: 'Waul', model: 'kimi-k2.5:cloud', costPer1K: 0.001, emoji: '🦊', color: '#f59e0b' },
             bobby: { name: 'Bobby', model: 'llama3.2', costPer1K: 0, emoji: '📊', color: '#3b82f6' },
             maria: { name: 'Maria', model: 'llama3.2', costPer1K: 0, emoji: '📝', color: '#ec4899' },
-            tim: { name: 'Tim', model: 'codex-5.2', costPer1K: 0.003, emoji: '⚙️', color: '#10b981' }
+            tim: { name: 'Tim', model: 'codex-5.2', costPer1K: 0.003, emoji: '⚙️', color: '#10b981' },
+            team: { name: 'Team Task', model: 'multi-agent', costPer1K: 0, emoji: '👥', color: '#a855f7' }
         };
         this.dailyBudget = 1.00; // $1/day budget
         this.usage = this.loadUsage();

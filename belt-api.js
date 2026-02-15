@@ -1,122 +1,186 @@
-// API Bridge to connect Belt OS with real agents
+// Enhanced API Bridge to connect Belt OS with real agents
+// Includes error handling, retry logic, request/response logging, and cost tracking
+
 class BeltAPI {
     constructor() {
         this.baseURL = 'http://localhost:8087'; // Waul's Brain endpoint
         this.agents = {
-            waul: { endpoint: '/waul', model: 'kimi-k2.5:cloud', emoji: '🦊', color: '#f59e0b', costPer1K: 0.001 },
-            bobby: { endpoint: '/bobby', model: 'llama3.2', emoji: '📊', color: '#3b82f6', costPer1K: 0 },
-            maria: { endpoint: '/maria', model: 'llama3.2', emoji: '📝', color: '#ec4899', costPer1K: 0 },
-            tim: { endpoint: '/tim', model: 'codex-5.2', emoji: '⚙️', color: '#10b981', costPer1K: 0.003 }
+            waul: { 
+                endpoint: '/waul', 
+                model: 'kimi-k2.5:cloud', 
+                emoji: '🦊', 
+                color: '#f59e0b',
+                costPer1K: 0.001
+            },
+            bobby: { 
+                endpoint: '/bobby', 
+                model: 'llama3.2', 
+                emoji: '📊', 
+                color: '#3b82f6',
+                costPer1K: 0
+            },
+            maria: { 
+                endpoint: '/maria', 
+                model: 'llama3.2', 
+                emoji: '📝', 
+                color: '#ec4899',
+                costPer1K: 0
+            },
+            tim: { 
+                endpoint: '/tim', 
+                model: 'codex-5.2', 
+                emoji: '⚙️', 
+                color: '#10b981',
+                costPer1K: 0.003
+            }
         };
-        this.sessionHistory = [];
-        this.maxRetries = 3;
-        this.retryDelay = 1000; // Start with 1 second
-        this.maxRetryDelay = 10000; // Max 10 seconds
-        this.enableLogging = true;
-        this.logBuffer = [];
-        this.maxLogEntries = 100;
         
-        // Load saved logs from localStorage
-        this.loadLogs();
+        // Configuration
+        this.config = {
+            maxRetries: 3,
+            retryDelay: 1000, // Initial retry delay in ms (doubles each retry)
+            timeout: 30000,   // Request timeout in ms
+            enableLogging: true,
+            logLevel: 'debug' // 'debug', 'info', 'warn', 'error'
+        };
+        
+        // Request/Response logs for debugging
+        this.requestLogs = [];
+        this.maxLogSize = 100;
+        
+        // Session history
+        this.sessionHistory = [];
+        this.maxSessionHistory = 50;
+        
+        // Online status cache
+        this.statusCache = { lastCheck: null, status: null };
+        this.statusCacheTTL = 5000; // 5 seconds
     }
 
-    // Logging system
+    // Logging utility
     log(level, message, data = null) {
-        if (!this.enableLogging) return;
-        
-        const entry = {
-            timestamp: new Date().toISOString(),
-            level, // 'debug', 'info', 'warn', 'error'
-            message,
-            data,
-            source: 'BeltAPI'
-        };
-        
-        // Add to buffer
-        this.logBuffer.unshift(entry);
-        if (this.logBuffer.length > this.maxLogEntries) {
-            this.logBuffer.pop();
-        }
-        
-        // Save to localStorage
-        this.saveLogs();
-        
-        // Also console log
-        const consoleMethod = level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log';
-        console[consoleMethod](`[BeltAPI ${level.toUpperCase()}] ${message}`, data || '');
-        
-        return entry;
-    }
-    
-    saveLogs() {
-        try {
-            localStorage.setItem('beltos_api_logs', JSON.stringify(this.logBuffer));
-        } catch (e) {
-            console.warn('Failed to save API logs:', e);
-        }
-    }
-    
-    loadLogs() {
-        try {
-            const saved = localStorage.getItem('beltos_api_logs');
-            if (saved) {
-                this.logBuffer = JSON.parse(saved);
+        const levels = { debug: 0, info: 1, warn: 2, error: 3 };
+        if (levels[level] >= levels[this.config.logLevel]) {
+            const timestamp = new Date().toISOString();
+            const logEntry = { timestamp, level, message, data };
+            
+            if (this.config.enableLogging) {
+                console.log(`[BeltAPI ${level.toUpperCase()}] ${timestamp} - ${message}`, data || '');
             }
-        } catch (e) {
-            console.warn('Failed to load API logs:', e);
+            
+            // Store in request logs
+            this.requestLogs.unshift(logEntry);
+            if (this.requestLogs.length > this.maxLogSize) {
+                this.requestLogs.pop();
+            }
+            
+            return logEntry;
         }
     }
-    
-    getLogs(level = null, limit = 50) {
-        let logs = this.logBuffer;
-        if (level) {
-            logs = logs.filter(l => l.level === level);
+
+    // Get request logs (for debugging UI)
+    getLogs(filter = null, limit = 50) {
+        let logs = this.requestLogs;
+        if (filter) {
+            logs = logs.filter(l => 
+                l.level === filter || 
+                l.message.toLowerCase().includes(filter.toLowerCase())
+            );
         }
         return logs.slice(0, limit);
     }
-    
+
+    // Clear logs
     clearLogs() {
-        this.logBuffer = [];
-        localStorage.removeItem('beltos_api_logs');
+        this.requestLogs = [];
+        this.log('info', 'Request logs cleared');
     }
 
-    // Exponential backoff retry logic
-    async sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-    
-    calculateRetryDelay(attempt) {
-        // Exponential backoff with jitter
-        const delay = Math.min(this.retryDelay * Math.pow(2, attempt), this.maxRetryDelay);
-        const jitter = Math.random() * 1000; // Add up to 1s of jitter
-        return delay + jitter;
-    }
-
-    async checkStatus() {
-        this.log('debug', 'Checking agent status...');
+    // Retry logic wrapper
+    async withRetry(operation, context = {}) {
+        let lastError;
+        let delay = this.config.retryDelay;
         
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
-            
-            const response = await fetch(`${this.baseURL}/status`, {
-                signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
+            try {
+                this.log('debug', `Attempt ${attempt}/${this.config.maxRetries}`, { context, attempt });
+                const result = await Promise.race([
+                    operation(),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Request timeout')), this.config.timeout)
+                    )
+                ]);
+                
+                if (attempt > 1) {
+                    this.log('info', `Operation succeeded on attempt ${attempt}`, { context });
+                }
+                return { success: true, result, attempts: attempt };
+            } catch (error) {
+                lastError = error;
+                this.log('warn', `Attempt ${attempt} failed`, { error: error.message, context });
+                
+                if (attempt < this.config.maxRetries) {
+                    this.log('info', `Retrying in ${delay}ms...`);
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2; // Exponential backoff
+                }
             }
-            
-            const data = await response.json();
-            this.log('info', 'Agent status check successful', { agents: data.agents });
-            return data;
-        } catch (e) {
-            this.log('error', 'Agent status check failed', { error: e.message });
-            return { status: 'offline', agents: [], error: e.message };
         }
+        
+        this.log('error', `All ${this.config.maxRetries} attempts failed`, { error: lastError.message, context });
+        return { success: false, error: lastError, attempts: this.config.maxRetries };
     }
 
+    // Enhanced status check with caching
+    async checkStatus(forceRefresh = false) {
+        const now = Date.now();
+        
+        // Return cached status if valid
+        if (!forceRefresh && this.statusCache.lastCheck && 
+            (now - this.statusCache.lastCheck) < this.statusCacheTTL) {
+            this.log('debug', 'Returning cached status', this.statusCache.status);
+            return this.statusCache.status;
+        }
+        
+        const result = await this.withRetry(async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            try {
+                const response = await fetch(`${this.baseURL}/status`, {
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (e) {
+                clearTimeout(timeoutId);
+                throw e;
+            }
+        }, { operation: 'checkStatus' });
+        
+        const status = result.success 
+            ? { ...result.result, online: true, checkedAt: new Date().toISOString() }
+            : { 
+                status: 'offline', 
+                agents: [], 
+                online: false, 
+                error: result.error?.message,
+                checkedAt: new Date().toISOString()
+              };
+        
+        this.statusCache = { lastCheck: now, status };
+        this.log('info', `Status check: ${status.online ? 'online' : 'offline'}`, status);
+        
+        return status;
+    }
+
+    // Enhanced send message with full error handling and logging
     async sendMessage(agent, message, context = {}, options = {}) {
         const agentConfig = this.agents[agent];
         if (!agentConfig) {
@@ -125,193 +189,187 @@ class BeltAPI {
             throw error;
         }
 
-        const requestId = `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const startTime = Date.now();
+        const startTime = performance.now();
+        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         
-        // Log the request
+        const requestBody = { 
+            message, 
+            context,
+            requestId,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Log request
         this.log('info', `Sending message to ${agent}`, { 
             requestId, 
             agent, 
-            messagePreview: message.slice(0, 100),
-            context: Object.keys(context)
+            messageLength: message.length,
+            endpoint: agentConfig.endpoint 
         });
-
-        let lastError = null;
         
-        // Retry loop
-        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+        this.log('debug', 'Request payload', requestBody);
+
+        const result = await this.withRetry(async () => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+            
             try {
-                const controller = new AbortController();
-                const timeoutMs = options.timeout || 30000; // 30s default timeout
-                const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-                
-                const requestBody = { 
-                    message, 
-                    context,
-                    requestId,
-                    timestamp: new Date().toISOString()
-                };
-                
                 const response = await fetch(`${this.baseURL}${agentConfig.endpoint}`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'X-Request-ID': requestId,
-                        'X-Attempt': (attempt + 1).toString()
+                        'Accept': 'application/json',
+                        'X-Request-ID': requestId
                     },
                     body: JSON.stringify(requestBody),
                     signal: controller.signal
                 });
-                
                 clearTimeout(timeoutId);
                 
+                // Handle HTTP errors
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    let errorBody;
+                    try {
+                        errorBody = await response.json();
+                    } catch {
+                        errorBody = await response.text();
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText} - ${JSON.stringify(errorBody)}`);
                 }
                 
                 const data = await response.json();
-                const duration = Date.now() - startTime;
-                
-                // Calculate cost based on tokens
-                const tokens = data.tokens || 0;
-                const cost = (tokens / 1000) * agentConfig.costPer1K;
-                
-                // Record session
-                const session = {
-                    id: requestId,
-                    agent,
-                    message: message.slice(0, 200),
-                    response: data.response?.slice(0, 200),
-                    timestamp: new Date().toISOString(),
-                    duration,
-                    tokens,
-                    cost,
-                    attempts: attempt + 1,
-                    status: 'success'
-                };
-                this.sessionHistory.unshift(session);
-                if (this.sessionHistory.length > 50) this.sessionHistory.pop();
-                
-                // Log success
-                this.log('info', `Message to ${agent} successful`, { 
-                    requestId, 
-                    duration, 
-                    tokens, 
-                    cost,
-                    attempts: attempt + 1 
-                });
-                
-                // Update cost tracking if available
-                if (window.costMonitor) {
-                    window.costMonitor.recordCall(agent, tokens);
-                }
-                
-                return { 
-                    ...data, 
-                    session,
-                    metadata: {
-                        requestId,
-                        duration,
-                        tokens,
-                        cost,
-                        attempts: attempt + 1,
-                        timestamp: new Date().toISOString()
-                    }
-                };
-                
+                return data;
             } catch (e) {
-                lastError = e;
-                const isRetryable = e.name === 'TypeError' || // Network errors
-                                   e.name === 'AbortError' || // Timeout
-                                   (e.message && e.message.includes('HTTP 5')); // Server errors
-                
-                if (attempt < this.maxRetries && isRetryable) {
-                    const delay = this.calculateRetryDelay(attempt);
-                    this.log('warn', `Request to ${agent} failed (attempt ${attempt + 1}/${this.maxRetries + 1}), retrying in ${delay}ms...`, { 
-                        error: e.message,
-                        requestId
-                    });
-                    await this.sleep(delay);
-                } else {
-                    break;
-                }
+                clearTimeout(timeoutId);
+                throw e;
             }
-        }
+        }, { operation: 'sendMessage', agent, requestId });
+
+        const duration = Math.round(performance.now() - startTime);
         
-        // All retries exhausted
-        const duration = Date.now() - startTime;
-        this.log('error', `All retries failed for ${agent}`, { 
+        if (!result.success) {
+            this.log('error', `Failed to send message to ${agent}`, { 
+                requestId, 
+                error: result.error.message,
+                duration 
+            });
+            
+            // Record failed session
+            const failedSession = {
+                id: requestId,
+                agent,
+                message: message.slice(0, 100),
+                response: null,
+                timestamp: new Date().toISOString(),
+                duration,
+                tokens: 0,
+                cost: 0,
+                error: result.error.message,
+                status: 'failed'
+            };
+            this.sessionHistory.unshift(failedSession);
+            
+            return { 
+                error: result.error.message, 
+                agent, 
+                offline: true,
+                requestId,
+                session: failedSession
+            };
+        }
+
+        const data = result.result;
+        
+        // Calculate cost
+        const tokens = data.tokens || data.usage?.total_tokens || 
+                       (data.usage?.prompt_tokens + data.usage?.completion_tokens) || 
+                       this.estimateTokens(message, data.response);
+        const cost = (tokens / 1000) * agentConfig.costPer1K;
+        
+        // Log response
+        this.log('info', `Received response from ${agent}`, { 
             requestId, 
-            error: lastError?.message,
-            duration,
-            attempts: this.maxRetries + 1
+            duration, 
+            tokens,
+            cost: cost.toFixed(6),
+            responseLength: data.response?.length || 0
         });
         
-        // Record failed session
-        const failedSession = {
+        this.log('debug', 'Response payload', data);
+        
+        // Record successful session
+        const session = {
             id: requestId,
             agent,
-            message: message.slice(0, 200),
+            message: message.slice(0, 100),
+            response: data.response?.slice(0, 100),
+            fullResponse: data.response,
             timestamp: new Date().toISOString(),
             duration,
-            tokens: 0,
-            cost: 0,
-            attempts: this.maxRetries + 1,
-            status: 'failed',
-            error: lastError?.message
+            tokens,
+            cost,
+            model: agentConfig.model,
+            status: 'success',
+            attempts: result.attempts
         };
-        this.sessionHistory.unshift(failedSession);
+        
+        this.sessionHistory.unshift(session);
+        if (this.sessionHistory.length > this.maxSessionHistory) {
+            this.sessionHistory.pop();
+        }
+        
+        // Update cost tracking if available
+        if (window.BeltOS?.CostMonitor) {
+            const costMonitor = new window.BeltOS.CostMonitor();
+            costMonitor.recordCall(agent, tokens);
+        }
         
         return { 
-            error: lastError?.message || 'Request failed', 
-            agent, 
-            offline: true,
-            metadata: {
-                requestId,
-                duration,
-                attempts: this.maxRetries + 1,
-                timestamp: new Date().toISOString()
-            }
+            ...data, 
+            session,
+            requestId,
+            tokens,
+            cost,
+            duration,
+            attempts: result.attempts
         };
     }
 
+    // Send message to all agents (team task)
     async teamTask(task, context = {}, options = {}) {
-        this.log('info', 'Initiating team task', { task: task.slice(0, 100), agents: Object.keys(this.agents) });
+        this.log('info', 'Starting team task', { task: task.slice(0, 100) });
         
-        // Send to all agents concurrently
-        const promises = Object.keys(this.agents).map(async agent => {
-            try {
-                const res = await this.sendMessage(agent, task, context, options);
-                return { agent, ...res };
-            } catch (e) {
-                this.log('error', `Team task failed for ${agent}`, { error: e.message });
-                return { agent, error: e.message, offline: true };
-            }
-        });
+        const responses = await Promise.allSettled(
+            Object.keys(this.agents).map(async agent => {
+                try {
+                    const res = await this.sendMessage(agent, task, context, options);
+                    return { agent, ...res };
+                } catch (e) {
+                    this.log('error', `Team task failed for ${agent}`, { error: e.message });
+                    return { agent, error: e.message, offline: true };
+                }
+            })
+        );
         
-        const responses = await Promise.allSettled(promises);
-        
-        // Process results
         const results = responses.map((result, index) => {
             const agent = Object.keys(this.agents)[index];
             if (result.status === 'fulfilled') {
                 return result.value;
-            } else {
-                return { agent, error: result.reason?.message || 'Unknown error', offline: true };
             }
+            return { agent, error: result.reason?.message || 'Unknown error', offline: true };
         });
         
-        // Log team task completion
-        const successful = results.filter(r => !r.error).length;
-        this.log('info', 'Team task completed', { 
+        const successCount = results.filter(r => !r.error).length;
+        this.log('info', 'Team task complete', { 
             total: results.length, 
-            successful, 
-            failed: results.length - successful 
+            successful: successCount,
+            failed: results.length - successCount 
         });
         
         return results;
     }
 
+    // Get session history
     getSessionHistory(agent = null, limit = 50) {
         let sessions = this.sessionHistory;
         if (agent) {
@@ -319,67 +377,104 @@ class BeltAPI {
         }
         return sessions.slice(0, limit);
     }
-    
+
+    // Clear session history
     clearSessionHistory() {
         this.sessionHistory = [];
         this.log('info', 'Session history cleared');
     }
 
+    // Estimate tokens (fallback when API doesn't return token count)
+    estimateTokens(input, output = '') {
+        // Rough approximation: ~4 characters per token
+        const totalChars = (input?.length || 0) + (output?.length || 0);
+        return Math.ceil(totalChars / 4);
+    }
+
     // Real-time polling for active sessions
     startPolling(callback, interval = 5000) {
-        this.log('info', 'Starting status polling', { interval });
+        this.log('info', `Starting status polling (interval: ${interval}ms)`);
         
         const poll = async () => {
-            try {
-                const status = await this.checkStatus();
-                callback(status);
-            } catch (e) {
-                this.log('warn', 'Polling error', { error: e.message });
-                callback({ status: 'error', error: e.message });
-            }
+            const status = await this.checkStatus();
+            callback(status);
         };
         
-        // Initial poll
+        // Immediate first check
         poll();
         
-        // Set up interval
         return setInterval(poll, interval);
     }
-    
+
+    // Stop polling
     stopPolling(handle) {
         clearInterval(handle);
         this.log('info', 'Status polling stopped');
     }
-    
-    // Test the API connection
-    async testConnection(agent = 'waul') {
-        this.log('info', `Testing connection to ${agent}`);
-        const result = await this.sendMessage(agent, 'ping', {}, { timeout: 10000 });
-        const success = !result.error;
-        this.log(success ? 'info' : 'error', `Connection test ${success ? 'successful' : 'failed'}`, { agent, result: success });
-        return { success, agent, result };
-    }
-    
-    // Get API health report
-    getHealthReport() {
-        const total = this.sessionHistory.length;
-        const successful = this.sessionHistory.filter(s => s.status === 'success').length;
-        const failed = this.sessionHistory.filter(s => s.status === 'failed').length;
-        const totalCost = this.sessionHistory.reduce((sum, s) => sum + (s.cost || 0), 0);
+
+    // Test connection to all agents
+    async testConnections() {
+        this.log('info', 'Testing connections to all agents');
         
+        const results = {};
+        for (const [name, config] of Object.entries(this.agents)) {
+            try {
+                const start = performance.now();
+                const response = await fetch(`${this.baseURL}${config.endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message: 'ping', 
+                        context: { test: true } 
+                    })
+                });
+                const duration = Math.round(performance.now() - start);
+                
+                results[name] = {
+                    online: response.ok,
+                    status: response.status,
+                    latency: duration,
+                    endpoint: config.endpoint
+                };
+                
+                this.log('info', `${name} connection test: ${response.ok ? 'OK' : 'FAILED'}`, results[name]);
+            } catch (e) {
+                results[name] = {
+                    online: false,
+                    error: e.message,
+                    endpoint: config.endpoint
+                };
+                this.log('error', `${name} connection test failed`, { error: e.message });
+            }
+        }
+        
+        return results;
+    }
+
+    // Export session data
+    exportSessions() {
         return {
-            totalSessions: total,
-            successful,
-            failed,
-            successRate: total > 0 ? ((successful / total) * 100).toFixed(1) : 0,
-            totalCost: totalCost.toFixed(4),
-            recentErrors: this.getLogs('error', 5),
-            agents: Object.keys(this.agents).map(agent => ({
-                name: agent,
-                ...this.agents[agent],
-                sessions: this.sessionHistory.filter(s => s.agent === agent).length
-            }))
+            exportedAt: new Date().toISOString(),
+            totalSessions: this.sessionHistory.length,
+            sessions: this.sessionHistory,
+            logs: this.requestLogs
         };
+    }
+
+    // Get API configuration
+    getConfig() {
+        return {
+            ...this.config,
+            baseURL: this.baseURL,
+            agents: Object.keys(this.agents)
+        };
+    }
+
+    // Update configuration
+    updateConfig(updates) {
+        this.config = { ...this.config, ...updates };
+        this.log('info', 'Configuration updated', this.config);
+        return this.config;
     }
 }
 
@@ -392,15 +487,11 @@ class GitHubIntegration {
     }
 
     async getRecentCommits(repo = 'belt-os', limit = 10) {
-        const now = Date.now();
-        if (this.lastFetch && (now - this.lastFetch < this.cacheTTL) && this.cache.length > 0) {
-            return this.cache.slice(0, limit);
-        }
-        
         try {
-            const response = await fetch(`https://api.github.com/repos/urbansupplyposh-blip/${repo}/commits?per_page=${limit}`, {
-                headers: { 'Accept': 'application/vnd.github.v3+json' }
-            });
+            const response = await fetch(
+                `https://api.github.com/repos/urbansupplyposh-blip/${repo}/commits?per_page=${limit}`,
+                { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+            );
             
             if (!response.ok) {
                 throw new Error(`GitHub API error: ${response.status}`);
@@ -408,27 +499,29 @@ class GitHubIntegration {
             
             const commits = await response.json();
             
-            this.cache = commits.map(c => ({
+            this.cache = commits;
+            this.lastFetch = Date.now();
+            
+            return commits.map(c => ({
                 id: c.sha.slice(0, 7),
                 message: c.commit.message.split('\n')[0],
                 author: c.commit.author.name,
                 date: c.commit.author.date,
-                avatar: c.author?.avatar_url
+                avatar: c.author?.avatar_url,
+                url: c.html_url
             }));
-            
-            this.lastFetch = now;
-            return this.cache.slice(0, limit);
         } catch (e) {
-            console.warn('Failed to fetch commits:', e);
+            console.error('GitHub fetch error:', e);
             return [];
         }
     }
 
-    async getRepoStats() {
+    async getRepoStats(repo = 'belt-os') {
         try {
-            const response = await fetch('https://api.github.com/repos/urbansupplyposh-blip/belt-os', {
-                headers: { 'Accept': 'application/vnd.github.v3+json' }
-            });
+            const response = await fetch(
+                `https://api.github.com/repos/urbansupplyposh-blip/${repo}`,
+                { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+            );
             
             if (!response.ok) {
                 throw new Error(`GitHub API error: ${response.status}`);
@@ -443,7 +536,7 @@ class GitHubIntegration {
                 url: data.html_url
             };
         } catch (e) {
-            console.warn('Failed to fetch repo stats:', e);
+            console.error('GitHub stats error:', e);
             return null;
         }
     }
@@ -465,12 +558,6 @@ class iMessageBridge {
         this.lastCheck = new Date().toISOString();
         return data;
     }
-    
-    async sendMessage(to, message) {
-        // This would integrate with BlueBubbles API
-        console.log(`[iMessage] Would send to ${to}: ${message}`);
-        return { success: true, to, message };
-    }
 
     renderNotificationBadge() {
         const el = document.getElementById('imessage-badge');
@@ -485,3 +572,7 @@ class iMessageBridge {
 window.BeltAPI = BeltAPI;
 window.GitHubIntegration = GitHubIntegration;
 window.iMessageBridge = iMessageBridge;
+
+// Initialize global API instance
+window.beltAPI = new BeltAPI();
+console.log('🔧 Belt API initialized - Ready to connect to agents at', window.beltAPI.baseURL);
