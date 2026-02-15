@@ -1,24 +1,26 @@
 {
-  "timestamp": "2026-02-15T05:28:52Z",
-  "localTime": "2026-02-15 00:28:52 ",
-  "collectors": {
-    "version": "1.0",
-    "interval": "5m",
-    "last_run": "2026-02-15T05:28:52Z"
-  },
+  "timestamp": "2026-02-15T05:29:44Z",
+  "localTime": "2026-02-15 00:29:44",
+  "version": "1.0",
+  "interval": "5m",
   "providers": {
     "openrouter": {
-      "status": "error",
-      "raw": {
-        "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)>"
-      }
+      "status": "active",
+      "credits_remaining": null,
+      "credits_used": 0.027102,
+      "credits_used_daily": 0.000458,
+      "credits_used_weekly": 0.027102,
+      "credits_used_monthly": 0.027102,
+      "label": "sk-or-v1-5fe...5f7",
+      "limit": null,
+      "is_free_tier": false
     },
     "anthropic": {
       "status": "active",
       "key_prefix": "sk-ant-api03-YR...",
       "model": "claude-opus-4-6",
       "estimated_cost_per_call": 0.045,
-      "note": "Anthropic doesn't expose usage via API - tracked locally"
+      "note": "Usage tracked via OpenClaw logs"
     },
     "ollama": {
       "status": "running",
@@ -44,51 +46,43 @@
   },
   "agents": {
     "waul": {
-      "model": "ollama/kimi-k2.5:cloud",
+      "model": "kimi-k2.5:cloud",
       "provider": "ollama",
       "cost_per_call": 0,
-      "status": "active"
+      "emoji": "\ud83e\udd8a"
     },
     "bobby": {
-      "model": "ollama/llama3.2:latest",
+      "model": "llama3.2:latest",
       "provider": "ollama",
       "cost_per_call": 0,
-      "status": "active"
+      "emoji": "\ud83d\udcca"
     },
     "maria": {
-      "model": "ollama/llama3.2:latest",
+      "model": "llama3.2:latest",
       "provider": "ollama",
       "cost_per_call": 0,
-      "status": "active"
+      "emoji": "\ud83d\udcdd"
     },
     "tim": {
-      "model": "openrouter/openai/codex-5.2",
+      "model": "openai/codex-5.2",
       "provider": "openrouter",
       "cost_per_call": 0.003,
-      "status": "active"
+      "emoji": "\u2699\ufe0f"
     },
     "john": {
-      "model": "anthropic/claude-opus-4-6",
+      "model": "claude-opus-4-6",
       "provider": "anthropic",
       "cost_per_call": 0.045,
-      "status": "standby"
+      "emoji": "\ud83c\udfa9"
     }
   },
   "summary": {
-    "total_providers": 3,
+    "providers_active": 3,
     "total_agents": 5,
-    "free_agents": [
-      "waul",
-      "bobby",
-      "maria"
-    ],
-    "paid_agents": [
-      "tim",
-      "john"
-    ],
-    "ollama_status": "running",
-    "openrouter_credits": "N/A",
-    "anthropic_status": "active"
+    "free_agents": 3,
+    "paid_agents": 2,
+    "openrouter_spend_today": 0.000458,
+    "openrouter_spend_total": 0.027102
   },
   "history": [
     {
@@ -102,6 +96,12 @@
       "or_credits": 0,
       "or_used": 0,
       "ollama_models": 2
+    },
+    {
+      "t": "2026-02-15T05:29:44Z",
+      "or_used": 0.027102,
+      "or_daily": 0.000458,
+      "ollama": 2
     }
   ]
 }
