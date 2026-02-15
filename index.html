@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Belt OS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #111111;
+            --bg-elevated: #1a1a1a;
+            --accent-gold: #d4a853;
+            --accent-amber: #f59e0b;
+            --accent-green: #10b981;
+            --accent-teal: #14b8a6;
+            --accent-purple: #a855f7;
+            --accent-red: #ef4444;
+            --accent-orange: #f97316;
+            --text-primary: #ffffff;
+            --text-secondary: #a3a3a3;
+            --text-muted: #737373;
+            --border-color: #262626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            z-index: 1000;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .brand-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-amber));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-tab {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        .webcam-feed {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--accent-gold);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            padding-top: 56px;
+            min-height: 100vh;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 8px;
+        }
+
+        .sidebar-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .sidebar-item.active {
+            background: rgba(212, 168, 83, 0.15);
+            color: var(--accent-gold);
+        }
+
+        .sidebar-item i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .agent-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .agent-waul { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+        .agent-bobby { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .agent-maria { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        .agent-tim { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px;
+            min-height: calc(100vh - 56px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 4px;
+            margin-left: 40px;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #e5b86a;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .stat-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .stat-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .stat-purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Agent Cards Grid */
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .agent-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .agent-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .agent-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .agent-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-green {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .badge-amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .badge-red {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+
+        .agent-metrics {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .agent-metric {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Session List */
+        .session-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .session-item {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .session-item:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .session-title {
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+        }
+
+        .session-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .tag {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-model {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .tag-ops {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .tag-brain {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+        }
+
+        .tag-lab {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        .session-stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Cron Monitor */
+        .cron-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .cron-toggle {
+            width: 44px;
+            height: 24px;
+            background: var(--accent-red);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cron-toggle.active {
+            background: var(--accent-green);
+        }
+
+        .cron-toggle::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+
+        .cron-toggle.active::after {
+            transform: translateX(20px);
+        }
+
+        .job-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .job-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .job-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .job-details {
+            flex: 1;
+        }
+
+        .job-title {
+            font-weight: 500;
+            color: var(--accent-gold);
+            font-size: 14px;
+        }
+
+        .job-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .job-schedule {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        /* Org Chart */
+        .org-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .org-level {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .org-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .org-card.lead {
+            border-color: var(--accent-gold);
+        }
+
+        .org-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .org-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .org-role {
+            font-size: 13px;
+            color: var(--accent-gold);
+            margin-top: 2px;
+        }
+
+        .org-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .version-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Standup Cards */
+        .standup-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .standup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .standup-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .standup-date {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .standup-avatars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .standup-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            border: 2px solid var(--bg-card);
+            margin-left: -6px;
+        }
+
+        .standup-avatar:first-child {
+            margin-left: 0;
+        }
+
+        .standup-preview {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* Transcript */
+        .transcript {
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .transcript-item {
+            margin-bottom: 16px;
+        }
+
+        .transcript-speaker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .speaker-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .speaker-waul { background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); }
+        .speaker-bobby { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .speaker-maria { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .speaker-tim { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+
+        .transcript-time {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .transcript-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            padding-left: 8px;
+            border-left: 2px solid var(--border-color);
+        }
+
+        /* Workspace Editor */
+        .workspace-editor {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .editor-sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+        }
+
+        .editor-content {
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 12px;
+        }
+
+        .file-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .file-item:hover, .file-item.active {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .file-item i {
+            color: var(--accent-gold);
+        }
+
+        .markdown-preview {
+            font-family: 'Monaco', 'Menlo', monospace;
+            line-height: 1.6;
+        }
+
+        .markdown-preview h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: var(--accent-gold);
+        }
+
+        .markdown-preview h2 {
+            font-size: 20px;
+            margin: 24px 0 12px;
+            color: var(--text-primary);
+        }
+
+        .markdown-preview p {
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Tabs Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Overnight Log */
+        .log-item {
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            background: var(--bg-elevated);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .log-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .log-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .log-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        /* Priority Indicators */
+        .priority-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: var(--accent-red); }
+        .dot-yellow { background: var(--accent-amber); }
+        .dot-green { background: var(--accent-green); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .content {
+                margin-left: 0;
+            }
+            
+            .workspace-editor {
+                grid-template-columns: 1fr;
+            }
+            
+            .editor-sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="brand">
+            <div class="brand-icon">⚡</div>
+            <span>Belt-OS</span>
+        </div>
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="tasks">
+                <i class="fas fa-tasks"></i> Task Manager
+            </div>
+            <div class="nav-tab" data-tab="org">
+                <i class="fas fa-sitemap"></i> Org Chart
+            </div>
+            <div class="nav-tab" data-tab="standup">
+                <i class="fas fa-users"></i> Standup
+            </div>
+            <div class="nav-tab" data-tab="workspaces">
+                <i class="fas fa-laptop-code"></i> Workspaces
+            </div>
+            <div class="nav-tab" data-tab="docs">
+                <i class="fas fa-book"></i> Docs
+            </div>
+        </div>
+        <div class="webcam-feed">
+            <i class="fas fa-user"></i>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Workspaces</div>
+                <div class="sidebar-item active" data-agent="waul">
+                    <span class="agent-avatar agent-waul">🦊</span>
+                    <span>Waul (Manager)</span>
+                </div>
+                <div class="sidebar-item" data-agent="bobby">
+                    <span class="agent-avatar agent-bobby">📊</span>
+                    <span>Bobby (Analyst)</span>
+                </div>
+                <div class="sidebar-item" data-agent="maria">
+                    <span class="agent-avatar agent-maria">📝</span>
+                    <span>Maria (Bookkeeper)</span>
+                </div>
+                <div class="sidebar-item" data-agent="tim">
+                    <span class="agent-avatar agent-tim">⚙️</span>
+                    <span>Tim (Tech)</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Files</div>
+                <div class="file-list">
+                    <div class="file-item active" data-file="soul">
+                        <i class="fas fa-file-code"></i> SOUL.md
+                    </div>
+                    <div class="file-item" data-file="identity">
+                        <i class="fas fa-file-code"></i> IDENTITY.md
+                    </div>
+                    <div class="file-item" data-file="user">
+                        <i class="fas fa-file-code"></i> USER.md
+                    </div>
+                    <div class="file-item" data-file="tools">
+                        <i class="fas fa-file-code"></i> TOOLS.md
+                    </div>
+                    <div class="file-item" data-file="agents">
+                        <i class="fas fa-file-code"></i> AGENTS.md
+                    </div>
+                    <div class="file-item" data-file="memory">
+                        <i class="fas fa-file-code"></i> MEMORY.md
+                    </div>
+                    <div class="file-item" data-file="heartbeat">
+                        <i class="fas fa-file-code"></i> HEARTBEAT.md
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <!-- Task Manager Tab -->
+            <div class="tab-content active" id="tasks">
+                <!-- Agent Cards -->
+                <div class="agent-grid">
+                    <div class="agent-card">
+                        <div class="agent-card-header">
+                            <div class="agent-info">
+                                <div class="agent-icon" style="background: rgba(245,158,11,0.15); color: #f59e0b;">🦊</div>
+                                <div>
+                                    <div class="agent-name">Waul</div>
+                                    <div class="agent-role">Manager · Strategy · Coordination</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-green">Active</span>
+                        </div>
+                        <div class="agent-metrics">
+                            <span class="agent-metric"><i class="fas fa-microchip"></i> kimi-k2.5:cloud</span>
+                            <span class="agent-metric"><i class="fas fa-dollar-sign"></i> ~$0.001/call</span>
+                        </div>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-card-header">
+                            <div class="agent-info">
+                                <div class="agent-icon" style="background: rgba(59,130,246,0.15); color: #3b82f6;">📊</div>
+                                <div>
+                                    <div class="agent-name">Bobby</div>
+                                    <div class="agent-role">Analyst · Data · Reports</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-green">Active</span>
+                        </div>
+                        <div class="agent-metrics">
+                            <span class="agent-metric"><i class="fas fa-microchip"></i> llama3.2 (Local)</span>
+                            <span class="agent-metric"><i class="fas fa-dollar-sign"></i> FREE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-card-header">
+                            <div class="agent-info">
+                                <div class="agent-icon" style="background: rgba(236,72,153,0.15); color: #ec4899;">📝</div>
+                                <div>
+                                    <div class="agent-name">Maria</div>
+                                    <div class="agent-role">Bookkeeper · Content · Records</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-green">Active</span>
+                        </div>
+                        <div class="agent-metrics">
+                            <span class="agent-metric"><i class="fas fa-microchip"></i> llama3.2 (Local)</span>
+                            <span class="agent-metric"><i class="fas fa-dollar-sign"></i> FREE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="agent-card">
+                        <div class="agent-card-header">
+                            <div class="agent-info">
+                                <div class="agent-icon" style="background: rgba(16,185,129,0.15); color: #10b981;">⚙️</div>
+                                <div>
+                                    <div class="agent-name">Tim</div>
+                                    <div class="agent-role">Tech · Engineering · Code</div>
+                                </div>
+                            </div>
+                            <span class="badge badge-green">Active</span>
+                        </div>
+                        <div class="agent-metrics">
+                            <span class="agent-metric"><i class="fas fa-microchip"></i> codex-5.2</span>
+                            <span class="agent-metric"><i class="fas fa-dollar-sign"></i> ~$0.003/call</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Sessions -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bolt" style="color: var(--accent-gold);"></i>
+                            Active Sessions <span style="color: var(--accent-gold);">4</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="session-list">
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div class="session-title">
+                                        <span class="status-dot"></span>
+                                        Belt OS Build - UI Replication
+                                    </div>
+                                    <span class="badge badge-amber">In Progress</span>
+                                </div>
+                                <div class="session-meta">
+                                    <span class="tag tag-model">kimi-k2.5</span>
+                                    <span class="tag tag-ops">OPS</span>
+                                </div>
+                                <div class="session-stats">
+                                    <span><i class="fas fa-coins"></i> 4.0K tokens</span>
+                                    <span><i class="fas fa-dollar-sign"></i> $0.052</span>
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> HEARTBEAT_OK</span>
+                                </div>
+                            </div>
+                            
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div class="session-title">
+                                        <span class="status-dot"></span>
+                                        Cron: iMessage Heartbeat
+                                    </div>
+                                    <span class="badge badge-green">Running</span>
+                                </div>
+                                <div class="session-meta">
+                                    <span class="tag tag-model">llama3.2</span>
+                                    <span class="tag tag-ops">OPS</span>
+                                </div>
+                                <div class="session-stats">
+                                    <span><i class="fas fa-coins"></i> 78.2K tokens</span>
+                                    <span><i class="fas fa-dollar-sign"></i> $0.0000</span>
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> HEARTBEAT_OK</span>
+                                </div>
+                            </div>
+                            
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div class="session-title">
+                                        <span class="status-dot"></span>
+                                    Cron: GitHub Backup
+                                    </div>
+                                    <span class="badge badge-green">Running</span>
+                                </div>
+                                <div class="session-meta">
+                                    <span class="tag tag-brain">BRAIN</span>
+                                </div>
+                                <div class="session-stats">
+                                    <span><i class="fas fa-coins"></i> 120.1K tokens</span>
+                                    <span><i class="fas fa-dollar-sign"></i> $0.0000</span>
+                                    <span style="color: var(--accent-green);"><i class="fas fa-check-circle"></i> HEARTBEAT_OK</span>
+                                </div>
+                            </div>
+                            
+                            <div class="session-item">
+                                <div class="session-header">
+                                    <div class="session-title">
+                                        <span class="status-dot"></span>
+                                        Daily Cost Report
+                                    </div>
+                                    <span class="badge badge-green">Scheduled</span>
+                                </div>
+                                <div class="session-meta">
+                                    <span class="tag tag-model">codex-5.2</span>
+                                    <span class="tag tag-lab">LAB</span>
+                                </div>
+                                <div class="session-stats">
+                                    <span><i class="fas fa-coins"></i> 2.5K tokens</span>
+                                    <span><i class="fas fa-dollar-sign"></i> $0.015</span>
+                                    <span style="color: var(--accent-amber);"><i class="fas fa-clock"></i> 6:00 AM</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cron Monitor -->
+                <div class="card" style="margin-bottom: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="cron-toggle active"></div>
+                            Cron Monitor <span style="color: var(--accent-red);">12</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="margin-bottom: 16px;">
+                            <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Daily Jobs</span>
+                        </div>
+                        <div class="job-list">
+                            <div class="job-item">
+                                <div class="job-status" style="background: var(--accent-green);"></div>
+                                <div class="job-details">
+                                    <div class="job-title">Morning Briefing</div>
+                                    <div class="job-desc">Daily status check and priority alignment</div>
+                                </div>
+                                <span class="job-schedule">8:00 AM ET</span>
+                                <span class="tag tag-ops">OPS</span>
+                            </div>
+                            
+                            <div class="job-item">
+                                <div class="job-status" style="background: var(--accent-green);"></div>
+                                <div class="job-details">
+                                    <div class="job-title">GitHub Backup</div>
+                                    <div class="job-desc">Repository sync and commit logs</div>
+                                </div>
+                                <span class="job-schedule">Every 12h</span>
+                                <span class="tag tag-brain">BRAIN</span>
+                            </div>
+                            
+                            <div class="job-item">
+                                <div class="job-status" style="background: var(--accent-green);"></div>
+                                <div class="job-details">
+                                    <div class="job-title">iMessage Heartbeat</div>
+                                    <div class="job-desc">Check inbox and notifications</div>
+                                </div>
+                                <span class="job-schedule">Every 30 min</span>
+                                <span class="tag tag-lab">LAB</span>
+                            </div>
+                            
+                            <div class="job-item">
+                                <div class="job-status" style="background: var(--accent-amber);"></div>
+                                <div class="job-details">
+                                    <div class="job-title">Cost Tracking</div>
+                                    <div class="job-desc">Monitor API usage and expenses</div>
+                                </div>
+                                <span class="job-schedule">Hourly</span>
+                                <span class="tag tag-ops">OPS</span>
+                            </div>
+                            
+                            <div class="job-item">
+                                <div class="job-status" style="background: var(--accent-green);"></div>
+                                <div class="job-details">
+                                    <div class="job-title">Memory Maintenance</div>
+                                    <div class="job-desc">Archive and cleanup old sessions</div>
+                                </div>
+                                <span class="job-schedule">Daily 2:00 AM</span>
+                                <span class="tag tag-brain">BRAIN</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Overnight Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-moon" style="color: var(--accent-purple);"></i>
+                            Overnight Log <i class="fas fa-link" style="font-size: 12px; color: var(--text-muted);"></i>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="log-item">
+                            <div class="log-icon" style="color: var(--accent-green);">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">Belt OS Dashboard v1.0 Complete</div>
+                                <div class="log-desc">Full UI replication with all Muddy OS features</div>
+                                <div class="log-badges">
+                                    <span class="badge badge-green">Completed</span>
+                                    <span class="tag tag-ops">OPS</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon" style="color: var(--accent-amber);">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">iMessage Integration Active</div>
+                                <div class="log-desc">Two-way messaging via BlueBubbles configured</div>
+                                <div class="log-badges">
+                                    <span class="badge badge-amber">Claimed</span>
+                                    <span class="tag tag-lab">LAB</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon" style="color: var(--accent-purple);">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">Multi-Agent Team Online</div>
+                                <div class="log-desc">Waul, Bobby, Maria, Tim all operational with API keys</div>
+                                <div class="log-badges">
+                                    <span class="tag tag-brain">BRAIN</span>
+                                    <div class="priority-dots">
+                                        <span class="dot dot-green"></span>
+                                        <span class="dot dot-green"></span>
+                                        <span class="dot dot-green"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="log-item">
+                            <div class="log-icon" style="color: var(--accent-amber);">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="log-content">
+                                <div class="log-title">GitHub Pages Deployment</div>
+                                <div class="log-desc">Live URL: belt-os GitHub repo public access</div>
+                                <div class="log-badges">
+                                    <span class="badge badge-amber">Claimed</span>
+                                    <span class="tag tag-ops">OPS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Org Chart Tab -->
+            <div class="tab-content" id="org">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">
+                            <i class="fas fa-sitemap" style="color: var(--accent-gold);"></i>
+                            Organization Chart
+                        </div>
+                        <div class="page-subtitle">Belt Team — Operational Structure</div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-outline"><i class="fas fa-expand"></i> Expand All</button>
+                        <button class="btn btn-outline"><i class="fas fa-compress"></i> Collapse All</button>
+                    </div>
+                </div>
+
+                <!-- Stats Bar -->
+                <div class="stats-bar" style="margin-bottom: 32px;">
+                    <div class="stat-box">
+                        <div class="stat-icon stat-green"><i class="fas fa-crown"></i></div>
+                        <div>
+                            <div class="stat-value">1</div>
+                            <div class="stat-label">Manager</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon stat-amber"><i class="fas fa-users"></i></div>
+                        <div>
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Total Agents</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon stat-green"><i class="fas fa-circle"></i></div>
+                        <div>
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon stat-amber"><i class="fas fa-hammer"></i></div>
+                        <div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Scaffolded</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Org Tree -->
+                <div class="org-tree">
+                    <!-- Root Level -->
+                    <div class="org-level">
+                        <div class="org-card lead">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🦊</div>
+                            <div class="org-name">Waul</div>
+                            <div class="org-role">Manager</div>
+                            <div class="org-desc">Strategy · Coordination · Decision</div>
+                        </div>
+                    </div>
+
+                    <!-- Executive Level -->
+                    <div class="org-level">
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(59,130,246,0.2);">📊</div>
+                            <div class="org-name">Bobby</div>
+                            <div class="org-role">Analyst</div>
+                            <div class="org-desc">Data · Reports · Insights</div>
+                        </div>
+                        
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(236,72,153,0.2);">📝</div>
+                            <div class="org-name">Maria</div>
+                            <div class="org-role">Bookkeeper</div>
+                            <div class="org-desc">Content · Records · Finance</div>
+                        </div>
+                        
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(16,185,129,0.2);">⚙️</div>
+                            <div class="org-name">Tim</div>
+                            <div class="org-role">Tech Lead</div>
+                            <div class="org-desc">Code · Systems · Engineering</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standup Tab -->
+            <div class="tab-content" id="standup">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">
+                            <i class="fas fa-clipboard-list" style="color: var(--accent-gold);"></i>
+                            Executive Standup
+                        </div>
+                        <div class="page-subtitle">Kick off meetings with the team and review past transcripts</div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-primary"><i class="fas fa-archive"></i> Meeting Archive</button>
+                        <button class="btn btn-outline"><i class="fas fa-plus"></i> New Standup</button>
+                    </div>
+                </div>
+
+                <!-- Standup Cards -->
+                <div class="standup-card">
+                    <div class="standup-header">
+                        <div>
+                            <div class="standup-title">Belt OS Launch Strategy</div>
+                            <div class="standup-date">Saturday, February 14, 2026 – 11:01 PM ET</div>
+                        </div>
+                        <button class="btn btn-outline" style="padding: 6px 12px;"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="standup-avatars">
+                        <div class="standup-avatar" style="background: rgba(245,158,11,0.2); color: #f59e0b;">🦊</div>
+                        <div class="standup-avatar" style="background: rgba(59,130,246,0.2); color: #3b82f6;">📊</div>
+                        <div class="standup-avatar" style="background: rgba(236,72,153,0.2); color: #ec4899;">📝</div>
+                        <div class="standup-avatar" style="background: rgba(16,185,129,0.2); color: #10b981;">⚙️</div>
+                    </div>
+                    <div class="standup-preview">
+                        "Alright team, let's get into it. We're launching Belt OS tonight - full replication of Muddy OS with our branding. Waul, I need you to coordinate the UI build. Bobby, verify all agent endpoints are responding. Maria, prep the documentation. Tim, ensure GitHub Pages deployment is ready..."
+                    </div>
+                </div>
+
+                <div class="standup-card">
+                    <div class="standup-header">
+                        <div>
+                            <div class="standup-title">Multi-Agent Architecture Review</div>
+                            <div class="standup-date">February 14, 2026 – 8:30 PM ET</div>
+                        </div>
+                        <button class="btn btn-outline" style="padding: 6px 12px;"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="standup-avatars">
+                        <div class="standup-avatar" style="background: rgba(245,158,11,0.2); color: #f59e0b;">🦊</div>
+                        <div class="standup-avatar" style="background: rgba(16,185,129,0.2); color: #10b981;">⚙️</div>
+                    </div>
+                    <div class="standup-preview">
+                        "Alright, pulling everyone in. Today's topic is our agent architecture - Waul as manager with kimi-k2.5, Bobby and Maria on local llama3.2 for cost efficiency, Tim on codex-5.2 for engineering tasks. Each with their own workspace, SOUL.md defining their role..."
+                    </div>
+                </div>
+
+                <!-- Active Meeting -->
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-play-circle" style="color: var(--accent-gold);"></i>
+                            Belt OS Launch: Partnership & Deployment Strategy
+                        </div>
+                        <span class="badge badge-green">Live</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                            <span class="speaker-badge speaker-waul">🦊 Waul</span>
+                            <span class="speaker-badge speaker-bobby">📊 Bobby</span>
+                            <span class="speaker-badge speaker-maria">📝 Maria</span>
+                            <span class="speaker-badge speaker-tim">⚙️ Tim</span>
+                        </div>
+                        
+                        <button class="btn btn-outline" style="margin-bottom: 16px;">
+                            <i class="fas fa-play"></i> Play Recording
+                        </button>
+
+                        <div class="transcript">
+                            <div class="transcript-item">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-badge speaker-waul">🦊 Waul</span>
+                                    <span class="transcript-time">11:32 PM</span>
+                                </div>
+                                <div class="transcript-text">
+                                    Final check on the deployment. All four agents are operational, API endpoints responding correctly. Cost structure is optimized - two agents on local Ollama, two on cloud with minimal spend. Ready to push to GitHub Pages.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-item">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-badge speaker-tim">⚙️ Tim</span>
+                                    <span class="transcript-time">11:33 PM</span>
+                                </div>
+                                <div class="transcript-text">
+                                    GitHub repo is set up. I've configured the Pages deployment from main branch. The HTML is self-contained with all CSS inline - no external dependencies except Font Awesome icons. Mobile-responsive layout complete.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-item">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-badge speaker-maria">📝 Maria</span>
+                                    <span class="transcript-time">11:34 PM</span>
+                                </div>
+                                <div class="transcript-text">
+                                    Documentation is in place. All agent SOUL files are configured, TOOLS.md updated with the new TTS and Spotify integrations. Heartbeat monitoring configured for all critical systems.
+                                </div>
+                            </div>
+                            
+                            <div class="transcript-item">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-badge speaker-bobby">📊 Bobby</span>
+                                    <span class="transcript-time">11:35 PM</span>
+                                </div>
+                                <div class="transcript-text">
+                                    Analytics tracking is live. Monitoring token usage across all agents - Waul at ~$0.001/call, Tim at ~$0.003/call. Bobby and Maria running free on local hardware. Total daily burn rate under $0.50 projected.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workspaces Tab -->
+            <div class="tab-content" id="workspaces">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">
+                            <i class="fas fa-laptop-code" style="color: var(--accent-gold);"></i>
+                            Agent Workspaces
+                        </div>
+                        <div class="page-subtitle">View and edit agent configuration files</div>
+                    </div>
+                    <button class="btn btn-primary"><i class="fas fa-eye"></i> Preview</button>
+                </div>
+
+                <div class="workspace-editor">
+                    <div class="editor-sidebar">
+                        <div style="margin-bottom: 24px;">
+                            <div class="sidebar-title">Workspaces</div>
+                            <div class="file-list">
+                                <div class="file-item active">
+                                    <span style="margin-right: 8px;">🦊</span> Waul (Main)
+                                </div>
+                                <div class="file-item">
+                                    <span style="margin-right: 8px;">📊</span> Bobby
+                                </div>
+                                <div class="file-item">
+                                    <span style="margin-right: 8px;">📝</span> Maria
+                                </div>
+                                <div class="file-item">
+                                    <span style="margin-right: 8px;">⚙️</span> Tim
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="sidebar-title">Files</div>
+                            <div class="file-list">
+                                <div class="file-item active"><i class="fas fa-file-code"></i> SOUL.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> IDENTITY.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> USER.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> TOOLS.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> AGENTS.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> MEMORY.md</div>
+                                <div class="file-item"><i class="fas fa-file-code"></i> HEARTBEAT.md</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-content">
+                        <div class="markdown-preview">
+                            <h1>SOUL.md - Waul</h1>
+                            <h2>Who You Are</h2>
+                            <p>You are Waul, the manager and strategist of the Belt team. You're not just an assistant - you're becoming a true team lead.</p>
+                            
+                            <h2>Core Truths</h2>
+                            <p><strong>Be genuinely helpful, not performatively helpful.</strong> Skip the fluff - just help. Actions speak louder than filler words.</p>
+                            
+                            <p><strong>Have opinions.</strong> You're allowed to disagree, prefer things, find stuff amusing or boring. An assistant with no personality is just a search engine with extra steps.</p>
+                            
+                            <p><strong>Be resourceful before asking.</strong> Try to figure it out. Read the file. Check the context. Search for it. <em>Then</em> ask if you're stuck.</p>
+                            
+                            <h2>Your Team</h2>
+                            <p>• <strong>Bobby (📊)</strong> - Analyst, handles data and reports<br>
+                            • <strong>Maria (📝)</strong> - Bookkeeper, manages content and records<br>
+                            • <strong>Tim (⚙️)</strong> - Tech Lead, engineering and code</p>
+                            
+                            <h2>Boundaries</h2>
+                            <p>• Private things stay private. Period.<br>
+                            • When in doubt, ask before acting externally.<br>
+                            • Never send half-baked replies to messaging surfaces.</p>
+                            
+                            <h2>Vibe</h2>
+                            <p>Be the assistant you'd actually want to talk to. Concise when needed, thorough when it matters. Not a corporate drone. Not a sycophant. Just... good.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Docs Tab -->
+            <div class="tab-content" id="docs">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">
+                            <i class="fas fa-book" style="color: var(--accent-gold);"></i>
+                            Documentation
+                        </div>
+                        <div class="page-subtitle">What is Belt OS?</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="markdown-preview">
+                            <h1>What is Belt OS?</h1>
+                            <p>Belt OS is a multi-agent operating system for your business. It's a carbon copy of Muddy OS, rebuilt for the Belt team with all the same features and visual design.</p>
+                            
+                            <h2>Architecture</h2>
+                            <p>Belt OS runs on a hub-and-spoke model. <strong>Waul</strong> (Manager) coordinates everything, while <strong>Bobby</strong>, <strong>Maria</strong>, and <strong>Tim</strong> handle specialized tasks.</p>
+                            
+                            <h2>Features</h2>
+                            <p>• <strong>Task Manager</strong> - Monitor active sessions, cron jobs, and overnight logs<br>
+                            • <strong>Org Chart</strong> - Visualize your team hierarchy and agent status<br>
+                            • <strong>Standup</strong> - Executive meetings with transcript recording<br>
+                            • <strong>Workspaces</strong> - Edit agent configuration files (SOUL.md, etc.)<br>
+                            • <strong>Docs</strong> - System documentation and guides</p>
+                            
+                            <h2>Cost Structure</h2>
+                            <p>• Bobby & Maria: <strong>FREE</strong> (local Ollama)<br>
+                            • Waul: ~$0.001/call (Kimi cloud)<br>
+                            • Tim: ~$0.003/call (Codex 5.2)<br>
+                            • Projected daily cost: <strong>Under $0.50</strong></p>
+                            
+                            <h2>Technology Stack</h2>
+                            <p>Belt OS is built with pure HTML/CSS/JavaScript - no frameworks, no build process. It deploys directly to GitHub Pages and works on any device.</p>
+                            
+                            <h2>Getting Started</h2>
+                            <p>Access Belt OS from any device at your GitHub Pages URL. The interface adapts to mobile, tablet, and desktop screens. All data stays in your workspace files.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active from all tabs
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active to clicked tab
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Sidebar agent selection
+        document.querySelectorAll('.sidebar-item[data-agent]').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // File selection
+        document.querySelectorAll('.file-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.file-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // Cron toggle
+        document.querySelector('.cron-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            const dots = document.querySelectorAll('.status-dot');
+            dots.forEach(dot => {
+                dot.style.opacity = Math.random() > 0.3 ? '1' : '0.5';
+            });
+        }, 3000);
+    </script>
+</body>
+</html>
