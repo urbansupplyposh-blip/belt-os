@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-02-15T05:28:38Z",
-  "localTime": "2026-02-15 00:28:38 ",
+  "timestamp": "2026-02-15T05:28:52Z",
+  "localTime": "2026-02-15 00:28:52 ",
   "collectors": {
     "version": "1.0",
     "interval": "5m",
-    "last_run": "2026-02-15T05:28:38Z"
+    "last_run": "2026-02-15T05:28:52Z"
   },
   "providers": {
     "openrouter": {
@@ -93,6 +93,12 @@
   "history": [
     {
       "timestamp": "2026-02-15T05:28:38Z",
+      "or_credits": 0,
+      "or_used": 0,
+      "ollama_models": 2
+    },
+    {
+      "timestamp": "2026-02-15T05:28:52Z",
       "or_credits": 0,
       "or_used": 0,
       "ollama_models": 2
