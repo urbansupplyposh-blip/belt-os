@@ -32,6 +32,13 @@ class BeltAPI {
                 emoji: '⚙️', 
                 color: '#10b981',
                 costPer1K: 0.003
+            },
+            john: { 
+                endpoint: '/john', 
+                model: 'claude-4.6', 
+                emoji: '🎩', 
+                color: '#6366f1',
+                costPer1K: 0.045  // ~$45 per 1K tokens
             }
         };
         

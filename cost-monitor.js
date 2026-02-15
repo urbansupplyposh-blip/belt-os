@@ -6,6 +6,7 @@ class CostMonitor {
             bobby: { name: 'Bobby', model: 'llama3.2', costPer1K: 0, emoji: '📊', color: '#3b82f6' },
             maria: { name: 'Maria', model: 'llama3.2', costPer1K: 0, emoji: '📝', color: '#ec4899' },
             tim: { name: 'Tim', model: 'codex-5.2', costPer1K: 0.003, emoji: '⚙️', color: '#10b981' },
+            john: { name: 'John', model: 'claude-4.6', costPer1K: 0.045, emoji: '🎩', color: '#6366f1', role: 'VP - Final Gate' },
             team: { name: 'Team Task', model: 'multi-agent', costPer1K: 0, emoji: '👥', color: '#a855f7' }
         };
         this.dailyBudget = 1.00; // $1/day budget
