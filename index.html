@@ -1672,16 +1672,11 @@
                 const tabId = tab.getAttribute('data-tab');
                 document.getElementById(tabId).classList.add('active');
                 
-                // Show sidebar only in Workspaces tab
+                // Hide global sidebar on ALL tabs (Workspaces has its own internal sidebar)
                 const sidebar = document.querySelector('.sidebar');
                 const content = document.querySelector('.content');
-                if (tabId === 'workspaces') {
-                    sidebar.classList.add('visible');
-                    content.classList.add('with-sidebar');
-                } else {
-                    sidebar.classList.remove('visible');
-                    content.classList.remove('with-sidebar');
-                }
+                sidebar.classList.remove('visible');
+                content.classList.remove('with-sidebar');
             });
         });
 
