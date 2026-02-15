@@ -1257,6 +1257,9 @@
             <div class="nav-tab" data-tab="workspaces">
                 <i class="fas fa-laptop-code"></i> Workspaces
             </div>
+            <div class="nav-tab" data-tab="costs">
+                <i class="fas fa-dollar-sign"></i> Cost Center
+            </div>
             <div class="nav-tab" data-tab="docs">
                 <i class="fas fa-book"></i> Docs
             </div>
@@ -2246,6 +2249,166 @@
                                 <textarea class="editor-textarea" id="file-editor" style="display: none;"></textarea>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cost Center Tab -->
+            <div class="tab-content" id="costs">
+                <div class="page-header">
+                    <div>
+                        <div class="page-title">
+                            <i class="fas fa-dollar-sign" style="color: var(--accent-gold);"></i>
+                            Cost Center
+                        </div>
+                        <div class="page-subtitle">Live provider usage • Auto-refreshes every 5 minutes</div>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button onclick="refreshCostCenter()" style="background:var(--accent-gold);color:#000;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:600;">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <span id="cost-last-updated" style="color:var(--text-muted);font-size:12px;align-self:center;"></span>
+                    </div>
+                </div>
+
+                <!-- Provider Cards -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:24px;">
+                    
+                    <!-- OpenRouter Card -->
+                    <div class="card" style="border-left:3px solid var(--accent-purple);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-route" style="color:var(--accent-purple);"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;font-size:16px;">OpenRouter</div>
+                                    <div style="color:var(--text-muted);font-size:12px;">Tim's Provider</div>
+                                </div>
+                            </div>
+                            <span id="or-status" class="status-badge" style="background:rgba(16,185,129,0.15);color:var(--accent-green);padding:4px 10px;border-radius:12px;font-size:11px;">--</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">Today</div>
+                                <div id="or-daily" style="font-size:20px;font-weight:700;color:var(--accent-purple);">--</div>
+                            </div>
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">This Week</div>
+                                <div id="or-weekly" style="font-size:20px;font-weight:700;color:var(--accent-purple);">--</div>
+                            </div>
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">This Month</div>
+                                <div id="or-monthly" style="font-size:20px;font-weight:700;color:var(--accent-purple);">--</div>
+                            </div>
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">All Time</div>
+                                <div id="or-total" style="font-size:20px;font-weight:700;color:var(--accent-purple);">--</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;padding:8px 12px;background:var(--bg-secondary);border-radius:8px;display:flex;justify-content:space-between;">
+                            <span style="color:var(--text-muted);font-size:12px;">Credit Limit</span>
+                            <span id="or-limit" style="color:var(--text-secondary);font-size:12px;">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Anthropic Card -->
+                    <div class="card" style="border-left:3px solid var(--accent-amber);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,0.15);display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-brain" style="color:var(--accent-amber);"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;font-size:16px;">Anthropic</div>
+                                    <div style="color:var(--text-muted);font-size:12px;">John's Provider (Final Gate)</div>
+                                </div>
+                            </div>
+                            <span id="anth-status" class="status-badge" style="background:rgba(245,158,11,0.15);color:var(--accent-amber);padding:4px 10px;border-radius:12px;font-size:11px;">--</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">Model</div>
+                                <div style="font-size:14px;font-weight:600;color:var(--accent-amber);">Claude Opus 4.6</div>
+                            </div>
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">Est. Cost/Call</div>
+                                <div style="font-size:20px;font-weight:700;color:var(--accent-red);">~$0.045</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;padding:10px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;">
+                            <div style="color:var(--accent-amber);font-size:12px;font-weight:600;">
+                                <i class="fas fa-exclamation-triangle"></i> Final Gate Only — No auto usage. John activates on CEO summon only.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ollama Card -->
+                    <div class="card" style="border-left:3px solid var(--accent-green);">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:40px;height:40px;border-radius:10px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;">
+                                    <i class="fas fa-server" style="color:var(--accent-green);"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;font-size:16px;">Ollama (Local)</div>
+                                    <div style="color:var(--text-muted);font-size:12px;">Waul, Bobby, Maria</div>
+                                </div>
+                            </div>
+                            <span id="ollama-status" class="status-badge" style="background:rgba(16,185,129,0.15);color:var(--accent-green);padding:4px 10px;border-radius:12px;font-size:11px;">--</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">Models Loaded</div>
+                                <div id="ollama-count" style="font-size:20px;font-weight:700;color:var(--accent-green);">--</div>
+                            </div>
+                            <div style="background:var(--bg-secondary);padding:12px;border-radius:8px;">
+                                <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;">Total Cost</div>
+                                <div style="font-size:20px;font-weight:700;color:var(--accent-green);">$0.00</div>
+                            </div>
+                        </div>
+                        <div id="ollama-models-list" style="margin-top:12px;"></div>
+                    </div>
+                </div>
+
+                <!-- Agent Cost Breakdown -->
+                <div class="card" style="margin-bottom:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <div style="font-weight:700;font-size:16px;">
+                            <i class="fas fa-users" style="color:var(--accent-gold);margin-right:8px;"></i>
+                            Agent Cost Breakdown
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--border-color);">
+                                    <th style="text-align:left;padding:10px;color:var(--text-muted);font-size:12px;font-weight:600;">Agent</th>
+                                    <th style="text-align:left;padding:10px;color:var(--text-muted);font-size:12px;font-weight:600;">Model</th>
+                                    <th style="text-align:left;padding:10px;color:var(--text-muted);font-size:12px;font-weight:600;">Provider</th>
+                                    <th style="text-align:right;padding:10px;color:var(--text-muted);font-size:12px;font-weight:600;">Cost/Call</th>
+                                    <th style="text-align:center;padding:10px;color:var(--text-muted);font-size:12px;font-weight:600;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="agent-cost-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Spend History Chart (simple CSS bar chart) -->
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                        <div style="font-weight:700;font-size:16px;">
+                            <i class="fas fa-chart-bar" style="color:var(--accent-gold);margin-right:8px;"></i>
+                            Spend History
+                        </div>
+                        <span style="color:var(--text-muted);font-size:12px;">Last 24 data points</span>
+                    </div>
+                    <div id="spend-chart" style="display:flex;align-items:flex-end;gap:4px;height:120px;padding:8px 0;border-bottom:1px solid var(--border-color);"></div>
+                    <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                        <span style="color:var(--text-muted);font-size:11px;">Oldest</span>
+                        <span style="color:var(--text-muted);font-size:11px;">Latest</span>
                     </div>
                 </div>
             </div>
@@ -6118,6 +6281,111 @@ function formatNumber(num) {
     if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
     return num.toString();
 }
+
+// ========== COST CENTER ==========
+const USAGE_DATA_URL = 'usage-data.json';
+let costCenterData = null;
+
+async function refreshCostCenter() {
+    try {
+        const resp = await fetch(USAGE_DATA_URL + '?t=' + Date.now());
+        if (!resp.ok) throw new Error('Failed to fetch');
+        costCenterData = await resp.json();
+        renderCostCenter(costCenterData);
+    } catch (e) {
+        console.error('[CostCenter] Error:', e);
+        document.getElementById('cost-last-updated').textContent = 'Failed to load data';
+    }
+}
+
+function renderCostCenter(data) {
+    if (!data) return;
+
+    // Last updated
+    document.getElementById('cost-last-updated').textContent = 
+        'Updated: ' + (data.localTime || data.timestamp);
+
+    // OpenRouter
+    const or = data.providers?.openrouter || {};
+    document.getElementById('or-status').textContent = or.status === 'active' ? '● Active' : '○ ' + (or.status || 'Unknown');
+    document.getElementById('or-status').style.color = or.status === 'active' ? 'var(--accent-green)' : 'var(--accent-red)';
+    document.getElementById('or-daily').textContent = '$' + (or.credits_used_daily || 0).toFixed(4);
+    document.getElementById('or-weekly').textContent = '$' + (or.credits_used_weekly || 0).toFixed(4);
+    document.getElementById('or-monthly').textContent = '$' + (or.credits_used_monthly || 0).toFixed(4);
+    document.getElementById('or-total').textContent = '$' + (or.credits_used || 0).toFixed(4);
+    document.getElementById('or-limit').textContent = or.limit ? '$' + or.limit : 'Unlimited';
+
+    // Anthropic
+    const anth = data.providers?.anthropic || {};
+    document.getElementById('anth-status').textContent = anth.status === 'active' ? '● Active' : '○ ' + (anth.status || 'Unknown');
+    document.getElementById('anth-status').style.color = anth.status === 'active' ? 'var(--accent-green)' : 'var(--accent-red)';
+
+    // Ollama
+    const ol = data.providers?.ollama || {};
+    document.getElementById('ollama-status').textContent = ol.status === 'running' ? '● Running' : '○ Offline';
+    document.getElementById('ollama-status').style.color = ol.status === 'running' ? 'var(--accent-green)' : 'var(--accent-red)';
+    document.getElementById('ollama-count').textContent = ol.count || 0;
+
+    // Ollama models list
+    const modelsList = document.getElementById('ollama-models-list');
+    if (ol.models && ol.models.length) {
+        modelsList.innerHTML = ol.models.map(m => `
+            <div style="display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg-secondary);border-radius:6px;margin-bottom:4px;">
+                <span style="font-weight:600;font-size:13px;">${m.name}</span>
+                <span style="color:var(--text-muted);font-size:12px;">${m.size_gb}GB · ${m.parameters || ''} · ${m.quantization || ''}</span>
+            </div>
+        `).join('');
+    }
+
+    // Agent table
+    const agents = data.agents || {};
+    const providerColors = { ollama: 'var(--accent-green)', openrouter: 'var(--accent-purple)', anthropic: 'var(--accent-amber)' };
+    document.getElementById('agent-cost-table').innerHTML = Object.entries(agents).map(([name, a]) => `
+        <tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:10px;">
+                <span style="font-size:16px;margin-right:6px;">${a.emoji || ''}</span>
+                <span style="font-weight:600;text-transform:capitalize;">${name}</span>
+            </td>
+            <td style="padding:10px;color:var(--text-secondary);font-size:13px;font-family:monospace;">${a.model}</td>
+            <td style="padding:10px;">
+                <span style="color:${providerColors[a.provider] || 'var(--text-secondary)'};font-weight:600;text-transform:capitalize;">${a.provider}</span>
+            </td>
+            <td style="padding:10px;text-align:right;font-weight:700;font-family:monospace;color:${a.cost_per_call === 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                ${a.cost_per_call === 0 ? 'FREE' : '$' + a.cost_per_call.toFixed(4)}
+            </td>
+            <td style="padding:10px;text-align:center;">
+                <span style="background:rgba(16,185,129,0.15);color:var(--accent-green);padding:3px 8px;border-radius:8px;font-size:11px;">${a.status || 'active'}</span>
+            </td>
+        </tr>
+    `).join('');
+
+    // Spend chart
+    const history = (data.history || []).slice(-24);
+    const chart = document.getElementById('spend-chart');
+    if (history.length) {
+        const maxVal = Math.max(...history.map(h => h.or_daily || 0), 0.001);
+        chart.innerHTML = history.map(h => {
+            const val = h.or_daily || 0;
+            const pct = Math.max((val / maxVal) * 100, 2);
+            return `<div style="flex:1;background:linear-gradient(to top,var(--accent-purple),rgba(168,85,247,0.4));height:${pct}%;border-radius:3px 3px 0 0;min-width:8px;" title="$${val.toFixed(4)}"></div>`;
+        }).join('');
+    } else {
+        chart.innerHTML = '<div style="color:var(--text-muted);font-size:13px;width:100%;text-align:center;align-self:center;">No history data yet. Cost collector builds history over time.</div>';
+    }
+}
+
+// Auto-refresh cost center every 5 minutes
+setInterval(refreshCostCenter, 300000);
+
+// Load on tab switch
+const origSwitchTab = document.querySelectorAll('.nav-tab');
+origSwitchTab.forEach(tab => {
+    tab.addEventListener('click', () => {
+        if (tab.dataset.tab === 'costs' && !costCenterData) {
+            refreshCostCenter();
+        }
+    });
+});
 </script>
 </body>
 </html>
