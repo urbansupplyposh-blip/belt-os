@@ -1572,7 +1572,7 @@
                             <i class="fas fa-sitemap" style="color: var(--accent-gold);"></i>
                             Organization Chart
                         </div>
-                        <div class="page-subtitle">Belt Team — Operational Structure</div>
+                        <div class="page-subtitle">Multi-Manager Structure — Everyone Can Hire</div>
                     </div>
                     <div class="page-actions">
                         <button class="btn btn-outline" onclick="openSendMessageModal()"><i class="fas fa-paper-plane"></i> Send Message</button>
@@ -1583,74 +1583,193 @@
                 </div>
 
                 <!-- Stats Bar -->
-                <div class="stats-bar" style="margin-bottom: 32px;">
+                <div class="stats-bar" style="margin-bottom: 24px;">
                     <div class="stat-box">
                         <div class="stat-icon stat-green"><i class="fas fa-crown"></i></div>
                         <div>
-                            <div class="stat-value">1</div>
-                            <div class="stat-label">Manager</div>
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Managers</div>
                         </div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon stat-amber"><i class="fas fa-users"></i></div>
                         <div>
-                            <div class="stat-value">4</div>
+                            <div class="stat-value">12</div>
                             <div class="stat-label">Total Agents</div>
                         </div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-icon stat-green"><i class="fas fa-circle"></i></div>
                         <div>
-                            <div class="stat-value">4</div>
+                            <div class="stat-value">12</div>
                             <div class="stat-label">Active</div>
                         </div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-icon stat-amber"><i class="fas fa-hammer"></i></div>
+                        <div class="stat-icon stat-purple"><i class="fas fa-user-plus"></i></div>
                         <div>
-                            <div class="stat-value">0</div>
-                            <div class="stat-label">Scaffolded</div>
+                            <div class="stat-value">8</div>
+                            <div class="stat-label">Hired</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Org Tree -->
-                <div class="org-tree">
-                    <!-- Root Level -->
+                <!-- Manager Tabs -->
+                <div class="org-tabs" style="display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                    <button class="org-tab active" data-manager="waul" onclick="selectManagerTab('waul')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); cursor: pointer; font-weight: 500;">
+                        <span style="font-size: 18px;">🦊</span> Waul's Team
+                    </button>
+                    <button class="org-tab" data-manager="bobby" onclick="selectManagerTab('bobby')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
+                        <span style="font-size: 18px;">📊</span> Bobby's Team
+                    </button>
+                    <button class="org-tab" data-manager="maria" onclick="selectManagerTab('maria')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
+                        <span style="font-size: 18px;">📝</span> Maria's Team
+                    </button>
+                    <button class="org-tab" data-manager="tim" onclick="selectManagerTab('tim')" style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); cursor: pointer; font-weight: 500;">
+                        <span style="font-size: 18px;">⚙️</span> Tim's Team
+                    </button>
+                </div>
+
+                <!-- Waul's Team -->
+                <div class="manager-org" id="waul-org" style="display: block;">
                     <div class="org-level">
                         <div class="org-card lead">
                             <div class="version-badge">Rev 1.0</div>
                             <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🦊</div>
                             <div class="org-name">Waul</div>
-                            <div class="org-role">Manager</div>
-                            <div class="org-desc">Strategy · Coordination · Decision</div>
+                            <div class="org-role">Strategy Manager</div>
+                            <div class="org-desc">Coordinates all managers · Final decisions</div>
                         </div>
                     </div>
-
-                    <!-- Executive Level -->
                     <div class="org-level">
                         <div class="org-card">
                             <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(139,92,246,0.2);">🎯</div>
+                            <div class="org-name">Focus</div>
+                            <div class="org-role">Priority Agent</div>
+                            <div class="org-desc">OKRs · Goals · Roadmaps</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(14,165,233,0.2);">💬</div>
+                            <div class="org-name">Relay</div>
+                            <div class="org-role">Comms Agent</div>
+                            <div class="org-desc">Standups · Updates · Alerts</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(99,102,241,0.2);">🤝</div>
+                            <div class="org-name">Bridge</div>
+                            <div class="org-role">Liaison Agent</div>
+                            <div class="org-desc">Cross-team sync · Handoffs</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bobby's Team -->
+                <div class="manager-org" id="bobby-org" style="display: none;">
+                    <div class="org-level">
+                        <div class="org-card lead">
+                            <div class="version-badge">Rev 1.0</div>
                             <div class="org-avatar" style="background: rgba(59,130,246,0.2);">📊</div>
                             <div class="org-name">Bobby</div>
-                            <div class="org-role">Analyst</div>
-                            <div class="org-desc">Data · Reports · Insights</div>
+                            <div class="org-role">Analytics Manager</div>
+                            <div class="org-desc">Data truth · Insights · Reports</div>
                         </div>
-                        
+                    </div>
+                    <div class="org-level">
                         <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(20,184,166,0.2);">📈</div>
+                            <div class="org-name">Tracker</div>
+                            <div class="org-role">Metrics Agent</div>
+                            <div class="org-desc">KPIs · Dashboards · Trends</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(249,115,22,0.2);">🔍</div>
+                            <div class="org-name">Sift</div>
+                            <div class="org-role">Research Agent</div>
+                            <div class="org-desc">Data mining · Validation</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(236,72,153,0.2);">⚠️</div>
+                            <div class="org-name">Radar</div>
+                            <div class="org-role">Alert Agent</div>
+                            <div class="org-desc">Anomaly detection · Warnings</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maria's Team -->
+                <div class="manager-org" id="maria-org" style="display: none;">
+                    <div class="org-level">
+                        <div class="org-card lead">
                             <div class="version-badge">Rev 1.0</div>
                             <div class="org-avatar" style="background: rgba(236,72,153,0.2);">📝</div>
                             <div class="org-name">Maria</div>
-                            <div class="org-role">Bookkeeper</div>
-                            <div class="org-desc">Content · Records · Finance</div>
+                            <div class="org-role">Operations Manager</div>
+                            <div class="org-desc">Records · Docs · Deadlines</div>
                         </div>
-                        
+                    </div>
+                    <div class="org-level">
                         <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(168,85,247,0.2);">📋</div>
+                            <div class="org-name">Clerk</div>
+                            <div class="org-role">Records Agent</div>
+                            <div class="org-desc">Filing · Archives · Search</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(34,197,94,0.2);">📅</div>
+                            <div class="org-name">Clock</div>
+                            <div class="org-role">Schedule Agent</div>
+                            <div class="org-desc">Calendar · Reminders · Deadlines</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(251,191,36,0.2);">💰</div>
+                            <div class="org-name">Ledger</div>
+                            <div class="org-role">Finance Agent</div>
+                            <div class="org-desc">Budgets · Costs · Tracking</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tim's Team -->
+                <div class="manager-org" id="tim-org" style="display: none;">
+                    <div class="org-level">
+                        <div class="org-card lead">
                             <div class="version-badge">Rev 1.0</div>
                             <div class="org-avatar" style="background: rgba(16,185,129,0.2);">⚙️</div>
                             <div class="org-name">Tim</div>
-                            <div class="org-role">Tech Lead</div>
-                            <div class="org-desc">Code · Systems · Engineering</div>
+                            <div class="org-role">Engineering Manager</div>
+                            <div class="org-desc">Code · Systems · Infrastructure</div>
+                        </div>
+                    </div>
+                    <div class="org-level">
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(59,130,246,0.2);">🐛</div>
+                            <div class="org-name">Squash</div>
+                            <div class="org-role">Debug Agent</div>
+                            <div class="org-desc">Bug hunting · Fixes · Testing</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(245,158,11,0.2);">🚀</div>
+                            <div class="org-name">Ship</div>
+                            <div class="org-role">Deploy Agent</div>
+                            <div class="org-desc">CI/CD · Releases · Rollbacks</div>
+                        </div>
+                        <div class="org-card">
+                            <div class="version-badge">Rev 1.0</div>
+                            <div class="org-avatar" style="background: rgba(139,92,246,0.2);">🔐</div>
+                            <div class="org-name">Vault</div>
+                            <div class="org-role">Security Agent</div>
+                            <div class="org-desc">Auth · Secrets · Compliance</div>
                         </div>
                     </div>
                 </div>
@@ -4873,6 +4992,28 @@ function showNotification(message) {
     notif.textContent = message;
     document.body.appendChild(notif);
     setTimeout(() => notif.remove(), 2000);
+}
+
+// Org Chart Manager Tab Switching
+function selectManagerTab(manager) {
+    // Update tab buttons
+    document.querySelectorAll('.org-tab').forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.background = 'var(--bg-card)';
+        tab.style.color = 'var(--text-secondary)';
+        tab.style.borderBottom = 'none';
+    });
+    const activeTab = document.querySelector(`.org-tab[data-manager="${manager}"]`);
+    activeTab.classList.add('active');
+    activeTab.style.background = 'var(--bg-elevated)';
+    activeTab.style.color = 'var(--text-primary)';
+    activeTab.style.borderBottom = '2px solid var(--accent-gold)';
+    
+    // Show/hide org trees
+    document.querySelectorAll('.manager-org').forEach(org => {
+        org.style.display = 'none';
+    });
+    document.getElementById(`${manager}-org`).style.display = 'block';
 }
 
 // Initialize Workspaces when DOM is ready
