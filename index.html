@@ -1662,6 +1662,75 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Live Request Monitor -->
+                <div class="card" style="margin-bottom: 24px;" id="live-monitor-card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="card-title">
+                            <div class="cron-toggle active" id="live-toggle"></div>
+                            Live Request Monitor <span style="color: var(--accent-green);" id="live-status-dot">●</span>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="last-update-time" style="font-size: 12px; color: var(--text-muted);">Updated: --</span>
+                            <button class="btn btn-outline" onclick="toggleLiveMonitor()" style="font-size: 12px; padding: 4px 8px;">
+                                <i class="fas fa-pause" id="live-toggle-icon"></i> <span id="live-toggle-text">Pause</span>
+                            </button>
+                            <button class="btn btn-outline" onclick="refreshLiveMonitor()" style="font-size: 12px; padding: 4px 8px;">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                            <div class="stat-box" style="background: var(--bg-elevated);">
+                                <div class="stat-icon stat-amber"><i class="fas fa-exchange-alt"></i></div>
+                                <div>
+                                    <div class="stat-value" id="total-requests">0</div>
+                                    <div class="stat-label">Total Requests</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" style="background: var(--bg-elevated);">
+                                <div class="stat-icon stat-purple"><i class="fas fa-coins"></i></div>
+                                <div>
+                                    <div class="stat-value" id="total-tokens">0</div>
+                                    <div class="stat-label">Total Tokens</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" style="background: var(--bg-elevated);">
+                                <div class="stat-icon stat-green"><i class="fas fa-dollar-sign"></i></div>
+                                <div>
+                                    <div class="stat-value" id="total-cost">$0.00</div>
+                                    <div class="stat-label">Total Cost</div>
+                                </div>
+                            </div>
+                            <div class="stat-box" style="background: var(--bg-elevated);">
+                                <div class="stat-icon stat-blue"><i class="fas fa-clock"></i></div>
+                                <div>
+                                    <div class="stat-value" id="rpm">0</div>
+                                    <div class="stat-label">Req/Min</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Agent Activity</span>
+                        </div>
+                        <div id="agent-activity-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                            <!-- Agent cards will be inserted here -->
+                        </div>
+                        
+                        <div style="margin-bottom: 16px; margin-top: 24px;">
+                            <span style="font-size: 12px; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Recent Requests</span>
+                        </div>
+                        <div id="recent-requests-list" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Request items will be inserted here -->
+                            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                                <i class="fas fa-circle-notch fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+                                <p>Loading request data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Org Chart Tab -->
@@ -5786,12 +5855,268 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize Org Chart tabs
     initOrgChart();
+    
+    // Initialize Live Request Monitor
+    initLiveMonitor();
 });
 
 // Initialize Org Chart
 function initOrgChart() {
     console.log('[BeltOS] Org Chart initialized');
     // Default to Waul's team is already shown via HTML (display: block)
+}
+
+// Live Request Monitor
+let liveMonitorInterval = null;
+let isLiveMonitorRunning = true;
+const LIVE_MONITOR_KEY = 'beltos_live_requests';
+const AGENTS = ['waul', 'bobby', 'maria', 'tim', 'john'];
+
+function initLiveMonitor() {
+    console.log('[BeltOS] Initializing Live Request Monitor...');
+    loadRequestHistory();
+    startLiveMonitor();
+}
+
+function startLiveMonitor() {
+    if (liveMonitorInterval) clearInterval(liveMonitorInterval);
+    
+    // Update immediately
+    updateLiveMonitor();
+    
+    // Then every 60 seconds
+    liveMonitorInterval = setInterval(updateLiveMonitor, 60000);
+    isLiveMonitorRunning = true;
+    
+    const toggle = document.getElementById('live-toggle');
+    const dot = document.getElementById('live-status-dot');
+    if (toggle) toggle.classList.add('active');
+    if (dot) dot.style.color = 'var(--accent-green)';
+    
+    console.log('[BeltOS] Live monitor started (60s interval)');
+}
+
+function stopLiveMonitor() {
+    if (liveMonitorInterval) {
+        clearInterval(liveMonitorInterval);
+        liveMonitorInterval = null;
+    }
+    isLiveMonitorRunning = false;
+    
+    const toggle = document.getElementById('live-toggle');
+    const dot = document.getElementById('live-status-dot');
+    const icon = document.getElementById('live-toggle-icon');
+    const text = document.getElementById('live-toggle-text');
+    
+    if (toggle) toggle.classList.remove('active');
+    if (dot) dot.style.color = 'var(--accent-red)';
+    if (icon) icon.className = 'fas fa-play';
+    if (text) text.textContent = 'Resume';
+    
+    console.log('[BeltOS] Live monitor stopped');
+}
+
+function toggleLiveMonitor() {
+    if (isLiveMonitorRunning) {
+        stopLiveMonitor();
+    } else {
+        startLiveMonitor();
+        const icon = document.getElementById('live-toggle-icon');
+        const text = document.getElementById('live-toggle-text');
+        if (icon) icon.className = 'fas fa-pause';
+        if (text) text.textContent = 'Pause';
+    }
+}
+
+function refreshLiveMonitor() {
+    console.log('[BeltOS] Manual refresh triggered');
+    updateLiveMonitor();
+    showNotification('Live monitor refreshed');
+}
+
+function loadRequestHistory() {
+    try {
+        const saved = localStorage.getItem(LIVE_MONITOR_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            console.log('[BeltOS] Loaded request history:', data.requests?.length || 0, 'requests');
+            return data;
+        }
+    } catch (e) {
+        console.error('[BeltOS] Error loading request history:', e);
+    }
+    return { requests: [], lastUpdated: null };
+}
+
+function saveRequestHistory(data) {
+    try {
+        localStorage.setItem(LIVE_MONITOR_KEY, JSON.stringify(data));
+    } catch (e) {
+        console.error('[BeltOS] Error saving request history:', e);
+    }
+}
+
+function generateMockRequest() {
+    // Generate a mock request for demonstration
+    const agents = [
+        { name: 'waul', emoji: '🦊', color: '#f59e0b', costPer1K: 0.001 },
+        { name: 'bobby', emoji: '📊', color: '#3b82f6', costPer1K: 0 },
+        { name: 'maria', emoji: '📝', color: '#ec4899', costPer1K: 0 },
+        { name: 'tim', emoji: '⚙️', color: '#10b981', costPer1K: 0.003 },
+        { name: 'john', emoji: '🎩', color: '#6366f1', costPer1K: 45 }
+    ];
+    
+    const agent = agents[Math.floor(Math.random() * agents.length)];
+    const tokens = Math.floor(Math.random() * 2000) + 100;
+    const cost = (tokens / 1000) * agent.costPer1K;
+    
+    return {
+        id: 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        agent: agent.name,
+        agentEmoji: agent.emoji,
+        agentColor: agent.color,
+        timestamp: new Date().toISOString(),
+        tokens: tokens,
+        cost: cost,
+        status: Math.random() > 0.1 ? 'success' : 'error',
+        endpoint: '/' + agent.name,
+        model: agent.name === 'waul' ? 'kimi-k2.5:cloud' : 
+                agent.name === 'bobby' ? 'llama3.2' :
+                agent.name === 'maria' ? 'llama3.2' :
+                agent.name === 'tim' ? 'codex-5.2' : 'claude-4.6'
+    };
+}
+
+function updateLiveMonitor() {
+    const now = new Date();
+    document.getElementById('last-update-time').textContent = 'Updated: ' + now.toLocaleTimeString();
+    
+    // Load existing data
+    let data = loadRequestHistory();
+    
+    // Simulate new requests (in production, this would fetch from API)
+    // Add 0-3 new mock requests
+    const newRequestCount = Math.floor(Math.random() * 4);
+    for (let i = 0; i < newRequestCount; i++) {
+        data.requests.unshift(generateMockRequest());
+    }
+    
+    // Keep only last 100 requests
+    if (data.requests.length > 100) {
+        data.requests = data.requests.slice(0, 100);
+    }
+    
+    data.lastUpdated = now.toISOString();
+    saveRequestHistory(data);
+    
+    // Calculate stats
+    const totalRequests = data.requests.length;
+    const totalTokens = data.requests.reduce((sum, r) => sum + (r.tokens || 0), 0);
+    const totalCost = data.requests.reduce((sum, r) => sum + (r.cost || 0), 0);
+    
+    // Calculate RPM (requests per minute) - last 5 minutes
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
+    const recentRequests = data.requests.filter(r => new Date(r.timestamp) > fiveMinutesAgo);
+    const rpm = Math.round(recentRequests.length / 5);
+    
+    // Update UI
+    document.getElementById('total-requests').textContent = totalRequests;
+    document.getElementById('total-tokens').textContent = formatNumber(totalTokens);
+    document.getElementById('total-cost').textContent = '$' + totalCost.toFixed(4);
+    document.getElementById('rpm').textContent = rpm;
+    
+    // Update agent activity grid
+    updateAgentActivityGrid(data.requests);
+    
+    // Update recent requests list
+    updateRecentRequestsList(data.requests.slice(0, 20));
+    
+    console.log('[BeltOS] Live monitor updated:', { totalRequests, totalTokens, totalCost: totalCost.toFixed(4), rpm });
+}
+
+function updateAgentActivityGrid(requests) {
+    const grid = document.getElementById('agent-activity-grid');
+    if (!grid) return;
+    
+    const agentStats = {};
+    AGENTS.forEach(a => {
+        agentStats[a] = { requests: 0, tokens: 0, cost: 0 };
+    });
+    
+    requests.forEach(r => {
+        if (agentStats[r.agent]) {
+            agentStats[r.agent].requests++;
+            agentStats[r.agent].tokens += r.tokens || 0;
+            agentStats[r.agent].cost += r.cost || 0;
+        }
+    });
+    
+    const agentConfig = {
+        waul: { emoji: '🦊', name: 'Waul', color: '#f59e0b', model: 'kimi-k2.5' },
+        bobby: { emoji: '📊', name: 'Bobby', color: '#3b82f6', model: 'llama3.2' },
+        maria: { emoji: '📝', name: 'Maria', color: '#ec4899', model: 'llama3.2' },
+        tim: { emoji: '⚙️', name: 'Tim', color: '#10b981', model: 'codex-5.2' },
+        john: { emoji: '🎩', name: 'John', color: '#6366f1', model: 'claude-4.6' }
+    };
+    
+    grid.innerHTML = AGENTS.map(agent => {
+        const stats = agentStats[agent];
+        const config = agentConfig[agent];
+        return `
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: ${config.color}20; display: flex; align-items: center; justify-content: center; font-size: 18px;">${config.emoji}</div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px;">${config.name}</div>
+                        <div style="font-size: 11px; color: var(--text-muted);">${config.model}</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-primary);">${stats.requests}</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">${formatNumber(stats.tokens)} tokens · $${stats.cost.toFixed(4)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateRecentRequestsList(requests) {
+    const list = document.getElementById('recent-requests-list');
+    if (!list) return;
+    
+    if (requests.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 12px; display: block;"></i>
+                <p>No requests yet. Data will appear as agents process tasks.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const agentEmojis = { waul: '🦊', bobby: '📊', maria: '📝', tim: '⚙️', john: '🎩' };
+    
+    list.innerHTML = requests.map(r => {
+        const time = new Date(r.timestamp).toLocaleTimeString();
+        const statusColor = r.status === 'success' ? 'var(--accent-green)' : 'var(--accent-red)';
+        const statusIcon = r.status === 'success' ? 'fa-check' : 'fa-times';
+        
+        return `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+                <span style="font-size: 16px;">${agentEmojis[r.agent] || '🔹'}</span>
+                <span style="color: var(--text-muted); min-width: 60px; font-size: 11px; font-family: monospace;">${time}</span>
+                <span style="color: var(--accent-gold); font-family: monospace; font-size: 11px;">${r.endpoint}</span>
+                <span style="margin-left: auto; color: var(--text-muted);">${formatNumber(r.tokens)} tokens</span>
+                <span style="color: ${statusColor};"><i class="fas ${statusIcon}"></i></span>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
 }
 </script>
 </body>
