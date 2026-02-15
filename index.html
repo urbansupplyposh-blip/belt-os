@@ -956,6 +956,40 @@
             gap: 4px;
         }
 
+        /* Org Chart Tabs */
+        .org-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .org-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .org-tab:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+
+        .org-tab.active {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--accent-gold);
+        }
+
         .view-btn {
             padding: 6px 12px;
             background: var(--bg-elevated);
@@ -4996,6 +5030,8 @@ function showNotification(message) {
 
 // Org Chart Manager Tab Switching
 function selectManagerTab(manager) {
+    console.log('[BeltOS] Switching to manager:', manager);
+    
     // Update tab buttons
     document.querySelectorAll('.org-tab').forEach(tab => {
         tab.classList.remove('active');
@@ -5003,17 +5039,27 @@ function selectManagerTab(manager) {
         tab.style.color = 'var(--text-secondary)';
         tab.style.borderBottom = 'none';
     });
+    
     const activeTab = document.querySelector(`.org-tab[data-manager="${manager}"]`);
-    activeTab.classList.add('active');
-    activeTab.style.background = 'var(--bg-elevated)';
-    activeTab.style.color = 'var(--text-primary)';
-    activeTab.style.borderBottom = '2px solid var(--accent-gold)';
+    if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.style.background = 'var(--bg-elevated)';
+        activeTab.style.color = 'var(--text-primary)';
+        activeTab.style.borderBottom = '2px solid var(--accent-gold)';
+    }
     
     // Show/hide org trees
     document.querySelectorAll('.manager-org').forEach(org => {
         org.style.display = 'none';
     });
-    document.getElementById(`${manager}-org`).style.display = 'block';
+    
+    const targetOrg = document.getElementById(`${manager}-org`);
+    if (targetOrg) {
+        targetOrg.style.display = 'block';
+        console.log('[BeltOS] Showing org:', manager + '-org');
+    } else {
+        console.error('[BeltOS] Org not found:', manager + '-org');
+    }
 }
 
 // Initialize Workspaces when DOM is ready
@@ -5105,5 +5151,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize Workspaces
     initWorkspaces();
+    
+    // Initialize Org Chart tabs
+    initOrgChart();
 });
+
+// Initialize Org Chart
+function initOrgChart() {
+    console.log('[BeltOS] Org Chart initialized');
+    // Default to Waul's team is already shown via HTML (display: block)
+}
 </script>
