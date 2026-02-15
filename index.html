@@ -5523,15 +5523,28 @@ function renderContent(markdown) {
 }
 
 function selectAgent(agent) {
+    console.log('[BeltOS] selectAgent called:', agent);
     currentAgent = agent;
+    
+    // Update agent list UI
     document.querySelectorAll('#agent-list .file-item').forEach(item => { item.classList.remove('active'); });
-    document.querySelector(`#agent-list .file-item[data-agent="${agent}"]`).classList.add('active');
+    const agentItem = document.querySelector(`#agent-list .file-item[data-agent="${agent}"]`);
+    if (agentItem) {
+        agentItem.classList.add('active');
+    }
+    
     const profile = agentProfiles[agent];
+    if (!profile) {
+        console.error('[BeltOS] Profile not found for agent:', agent);
+        return;
+    }
     
     // Build phrases HTML
     const phrasesHtml = profile.phrases ? profile.phrases.map(p => `• "${p}"`).join('<br>') : '';
     
-    document.getElementById('agent-profile-banner').innerHTML = `
+    const bannerEl = document.getElementById('agent-profile-banner');
+    if (bannerEl) {
+        bannerEl.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
             <div style="display: flex; align-items: flex-start; gap: 16px;">
                 <div class="agent-profile-emoji" style="background: ${profile.color}20; color: ${profile.color};">${profile.emoji}</div>
@@ -5555,6 +5568,9 @@ function selectAgent(agent) {
             </div>
         </div>
     `;
+    } else {
+        console.error('[BeltOS] Banner element not found');
+    }
     
     // Update character cards
     const characterCards = document.querySelector('.agent-character-cards');
@@ -5575,21 +5591,47 @@ function selectAgent(agent) {
         `;
     }
     
-    selectFile(currentFile);
+    // Call selectFile with error handling
+    try {
+        selectFile(currentFile);
+    } catch (e) {
+        console.error('[BeltOS] Error calling selectFile:', e);
+    }
 }
 
 function selectFile(filename) {
     currentFile = filename;
+    console.log('[BeltOS] selectFile called:', filename, 'for agent:', currentAgent);
+    
     document.querySelectorAll('#file-list .file-item').forEach(item => { item.classList.remove('active'); });
-    document.querySelector(`#file-list .file-item[data-file="${filename}"]`).classList.add('active');
-    const fileIcon = fileIcons[filename];
-    document.getElementById('current-file-tab').innerHTML = `
-        <i class="fas ${fileIcon.icon}" style="color: ${fileIcon.color};"></i>
-        <span>${filename}</span>
-        <button class="file-tab-close" onclick="closeFileTab()"><i class="fas fa-times"></i></button>
-    `;
-    const content = workspaceDocs[currentAgent].files[filename];
-    renderContent(content);
+    const fileItem = document.querySelector(`#file-list .file-item[data-file="${filename}"]`);
+    if (fileItem) {
+        fileItem.classList.add('active');
+    }
+    
+    const fileIcon = fileIcons[filename] || { icon: 'fa-file', color: '#888' };
+    const tabEl = document.getElementById('current-file-tab');
+    if (tabEl) {
+        tabEl.innerHTML = `
+            <i class="fas ${fileIcon.icon}" style="color: ${fileIcon.color};"></i>
+            <span>${filename}</span>
+            <button class="file-tab-close" onclick="closeFileTab()"><i class="fas fa-times"></i></button>
+        `;
+    }
+    
+    try {
+        const content = workspaceDocs[currentAgent]?.files?.[filename];
+        if (content) {
+            renderContent(content);
+            console.log('[BeltOS] Content rendered successfully');
+        } else {
+            console.error('[BeltOS] No content found for', currentAgent, filename);
+            renderContent('# Error\n\nDocument not found. Please refresh the page.');
+        }
+    } catch (e) {
+        console.error('[BeltOS] Error in selectFile:', e);
+        renderContent('# Error\n\nFailed to load document. Check console for details.');
+    }
 }
 
 function selectAgentOld(agent) {
@@ -5710,7 +5752,23 @@ function selectManagerTab(manager) {
 // Initialize Workspaces when DOM is ready
 function initWorkspaces() {
     if (document.getElementById('workspaces')) {
-        selectAgent('waul');
+        console.log('[BeltOS] Initializing Workspaces...');
+        // Ensure viewMode is set
+        if (!window.viewMode) {
+            window.viewMode = 'preview';
+        }
+        // Render initial content
+        try {
+            const initialContent = workspaceDocs['waul'].files['SOUL.md'];
+            if (initialContent) {
+                renderContent(initialContent);
+                console.log('[BeltOS] Workspaces initialized with Waul/SOUL.md');
+            } else {
+                console.error('[BeltOS] Could not find initial content');
+            }
+        } catch (e) {
+            console.error('[BeltOS] Error initializing workspaces:', e);
+        }
     }
 }
 
