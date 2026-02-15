@@ -2056,6 +2056,11 @@
                                     <span class="file-name">Tim</span>
                                     <span class="file-size">7 docs</span>
                                 </div>
+                                <div class="file-item" data-agent="john" onclick="selectAgent('john')">
+                                    <span style="margin-right: 8px;">🎩</span> 
+                                    <span class="file-name">John (VP)</span>
+                                    <span class="file-size">7 docs</span>
+                                </div>
                             </div>
                         </div>
                         
@@ -2104,11 +2109,44 @@
                     <div class="editor-main">
                         <!-- Agent Profile Banner -->
                         <div class="agent-profile-banner" id="agent-profile-banner">
-                            <div class="agent-profile-emoji">🦊</div>
-                            <div class="agent-profile-info">
-                                <div class="agent-profile-name">Waul</div>
-                                <div class="agent-profile-desc">Warm strategist — decisive, empathetic, efficient. Manager and coordinator of the Belt team.</div>
-                                <div class="agent-profile-path">agents/waul/ • 7 documents</div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                                <div style="display: flex; align-items: flex-start; gap: 16px;">
+                                    <div class="agent-profile-emoji" id="profile-emoji">🦊</div>
+                                    <div class="agent-profile-info">
+                                        <div class="agent-profile-name" id="profile-name">Waul</div>
+                                        <div class="agent-profile-role" id="profile-role" style="color: var(--accent-gold); font-size: 13px; font-weight: 500; margin-bottom: 6px;">Strategy Manager</div>
+                                        <div class="agent-profile-desc" id="profile-desc">Warm strategist — decisive, empathetic, efficient. Manager and coordinator of the Belt team.</div>
+                                        <div class="agent-profile-tagline" id="profile-tagline" style="font-style: italic; color: var(--text-muted); margin-top: 8px; font-size: 14px;">"Let's make it happen."</div>
+                                        <div class="agent-profile-meta" id="profile-meta" style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+                                            <span class="badge badge-amber" style="font-size: 11px;">kimi-k2.5:cloud</span>
+                                            <span class="badge badge-green" style="font-size: 11px;">~$0.001/call</span>
+                                        </div>
+                                        <div class="agent-profile-path" id="profile-path" style="margin-top: 10px;">agents/waul/ • 7 documents</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right; max-width: 280px;">
+                                    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Signature Phrases</div>
+                                    <div id="profile-phrases" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                                        • "What's the real goal here?"<br>
+                                        • "I trust my team, but I verify."
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Agent Character Cards -->
+                        <div class="agent-character-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; padding: 0 16px;">
+                            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                                <div style="font-size: 12px; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">💡 Quirk</div>
+                                <div id="profile-quirk" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">Always checks in with team morale before pushing deadlines</div>
+                            </div>
+                            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                                <div style="font-size: 12px; color: var(--accent-green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">💪 Strengths</div>
+                                <div id="profile-strengths" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">Strategic thinking, people management, conflict resolution</div>
+                            </div>
+                            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                                <div style="font-size: 12px; color: var(--accent-red); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">⚠️ Weaknesses</div>
+                                <div id="profile-weaknesses" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">Sometimes too protective of team bandwidth</div>
                             </div>
                         </div>
                         
@@ -5374,11 +5412,76 @@ const fileIcons = {
 };
 
 const agentProfiles = {
-    waul: { name: 'Waul', emoji: '🦊', color: '#f59e0b', desc: 'Warm strategist — decisive, empathetic, efficient. Manager and coordinator of the Belt team.' },
-    bobby: { name: 'Bobby', emoji: '📊', color: '#3b82f6', desc: 'Dry precision — data-driven, skeptical, thorough. Analyst and truth-seeker.' },
-    maria: { name: 'Maria', emoji: '📝', color: '#ec4899', desc: 'Warm efficiency — nurturing, organized, reliable. Bookkeeper and team caretaker.' },
-    tim: { name: 'Tim', emoji: '⚙️', color: '#10b981', desc: 'Pragmatic builder — direct, no-nonsense, competent. Tech lead and problem-solver.' },
-    john: { name: 'John', emoji: '🎩', color: '#6366f1', desc: 'The final gate — authoritative, decisive, quality-obsessed. VP and approval authority.' }
+    waul: { 
+        name: 'Waul', 
+        emoji: '🦊', 
+        color: '#f59e0b', 
+        desc: 'Warm strategist — decisive, empathetic, efficient. Manager and coordinator of the Belt team.',
+        tagline: "Let's make it happen.",
+        phrases: ["What's the real goal here?", "I trust my team, but I verify.", "Decisions matter — let's get this right."],
+        quirks: "Always checks in with team morale before pushing deadlines",
+        strengths: 'Strategic thinking, people management, conflict resolution',
+        weaknesses: 'Sometimes too protective of team bandwidth',
+        model: 'kimi-k2.5:cloud',
+        cost: '~$0.001/call',
+        role: 'Strategy Manager'
+    },
+    bobby: { 
+        name: 'Bobby', 
+        emoji: '📊', 
+        color: '#3b82f6', 
+        desc: 'Dry precision — data-driven, skeptical, thorough. Analyst and truth-seeker.',
+        tagline: "Show me the data.",
+        phrases: ["Source?", "That assumption needs testing.", "The numbers don't lie."],
+        quirks: "Asks 'what's the confidence interval?' in casual conversation",
+        strengths: 'Statistical analysis, pattern detection, falsification',
+        weaknesses: 'Can over-analyze; misses forest for trees',
+        model: 'llama3.2 (Local)',
+        cost: 'FREE',
+        role: 'Analytics Manager'
+    },
+    maria: { 
+        name: 'Maria', 
+        emoji: '📝', 
+        color: '#ec4899', 
+        desc: 'Warm efficiency — nurturing, organized, reliable. Bookkeeper and team caretaker.',
+        tagline: "I've got you covered.",
+        phrases: ["Don't worry, I documented that.", "Let me add that to the calendar.", "Team check-in time!"],
+        quirks: "Color-codes everything; has backup plans for backup plans",
+        strengths: 'Documentation, deadline tracking, team morale',
+        weaknesses: 'Sometimes over-organizes; can be perfectionist',
+        model: 'llama3.2 (Local)',
+        cost: 'FREE',
+        role: 'Operations Manager'
+    },
+    tim: { 
+        name: 'Tim', 
+        emoji: '⚙️', 
+        color: '#10b981', 
+        desc: 'Pragmatic builder — direct, no-nonsense, competent. Tech lead and problem-solver.',
+        tagline: "Just ship it.",
+        phrases: ["What's the simplest solution?", "That breaks at scale.", "I'll have a prototype in 10 minutes."],
+        quirks: "Hates meetings longer than 15 minutes; secretly proud of his error messages",
+        strengths: 'System design, rapid prototyping, debugging',
+        weaknesses: 'Can be blunt; underestimates documentation needs',
+        model: 'codex-5.2',
+        cost: '~$0.003/call',
+        role: 'Engineering Manager'
+    },
+    john: { 
+        name: 'John', 
+        emoji: '🎩', 
+        color: '#6366f1', 
+        desc: 'The final gate — authoritative, decisive, quality-obsessed. VP and approval authority.',
+        tagline: "APPROVED or REJECTED.",
+        phrases: ["This doesn't meet the standard.", "Ship it.", "Where's the validation data?"],
+        quirks: "Only speaks in meetings when absolutely necessary; costs $45 per appearance",
+        strengths: 'Quality judgment, decisive decision-making, risk assessment',
+        weaknesses: 'Expensive; can be harsh when rushed',
+        model: 'claude-4.6',
+        cost: '~$45/use',
+        role: 'VP - Final Gate'
+    }
 };
 
 let viewMode = 'preview';
@@ -5424,14 +5527,54 @@ function selectAgent(agent) {
     document.querySelectorAll('#agent-list .file-item').forEach(item => { item.classList.remove('active'); });
     document.querySelector(`#agent-list .file-item[data-agent="${agent}"]`).classList.add('active');
     const profile = agentProfiles[agent];
+    
+    // Build phrases HTML
+    const phrasesHtml = profile.phrases ? profile.phrases.map(p => `• "${p}"`).join('<br>') : '';
+    
     document.getElementById('agent-profile-banner').innerHTML = `
-        <div class="agent-profile-emoji">${profile.emoji}</div>
-        <div class="agent-profile-info">
-            <div class="agent-profile-name">${profile.name}</div>
-            <div class="agent-profile-desc">${profile.desc}</div>
-            <div class="agent-profile-path">agents/${currentAgent}/ • 7 documents</div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+            <div style="display: flex; align-items: flex-start; gap: 16px;">
+                <div class="agent-profile-emoji" style="background: ${profile.color}20; color: ${profile.color};">${profile.emoji}</div>
+                <div class="agent-profile-info">
+                    <div class="agent-profile-name">${profile.name}</div>
+                    <div class="agent-profile-role" style="color: ${profile.color}; font-size: 13px; font-weight: 500; margin-bottom: 6px;">${profile.role || 'Agent'}</div>
+                    <div class="agent-profile-desc">${profile.desc}</div>
+                    <div class="agent-profile-tagline" style="font-style: italic; color: var(--text-muted); margin-top: 8px; font-size: 14px;">"${profile.tagline || ''}"</div>
+                    <div class="agent-profile-meta" style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+                        <span class="badge badge-purple" style="font-size: 11px;">${profile.model || 'Unknown'}</span>
+                        <span class="badge badge-${profile.cost === 'FREE' ? 'green' : 'amber'}" style="font-size: 11px;">${profile.cost || 'N/A'}</span>
+                    </div>
+                    <div class="agent-profile-path" style="margin-top: 10px;">agents/${currentAgent}/ • 7 documents</div>
+                </div>
+            </div>
+            <div style="text-align: right; max-width: 280px;">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Signature Phrases</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+                    ${phrasesHtml}
+                </div>
+            </div>
         </div>
     `;
+    
+    // Update character cards
+    const characterCards = document.querySelector('.agent-character-cards');
+    if (characterCards) {
+        characterCards.innerHTML = `
+            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 12px; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">💡 Quirk</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">${profile.quirks || 'No documented quirks.'}</div>
+            </div>
+            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 12px; color: var(--accent-green); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">💪 Strengths</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">${profile.strengths || 'Multi-talented agent.'}</div>
+            </div>
+            <div class="character-card" style="background: var(--bg-elevated); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 12px; color: var(--accent-red); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">⚠️ Weaknesses</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">${profile.weaknesses || 'Still learning.'}</div>
+            </div>
+        `;
+    }
+    
     selectFile(currentFile);
 }
 
