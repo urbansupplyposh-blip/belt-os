@@ -1030,6 +1030,25 @@
         <main class="content">
             <!-- Task Manager Tab -->
             <div class="tab-content active" id="tasks">
+                <!-- Quick Actions Bar -->
+                <div class="page-header" style="margin-bottom: 16px;">
+                    <div>
+                        <div class="page-title" style="font-size: 20px;">
+                            <i class="fas fa-bolt" style="color: var(--accent-gold);"></i>
+                            Task Manager
+                        </div>
+                        <div class="page-subtitle">Monitor sessions, send messages, and track costs</div>
+                    </div>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="openSendMessageModal()">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                        <button class="btn btn-outline" onclick="openApiTestPanel()">
+                            <i class="fas fa-vial"></i> Test API
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Agent Cards -->
                 <div class="agent-grid">
                     <div class="agent-card">
@@ -1338,6 +1357,8 @@
                         <div class="page-subtitle">Belt Team — Operational Structure</div>
                     </div>
                     <div class="page-actions">
+                        <button class="btn btn-outline" onclick="openSendMessageModal()"><i class="fas fa-paper-plane"></i> Send Message</button>
+                        <button class="btn btn-outline" onclick="openApiTestPanel()"><i class="fas fa-vial"></i> Test API</button>
                         <button class="btn btn-outline"><i class="fas fa-expand"></i> Expand All</button>
                         <button class="btn btn-outline"><i class="fas fa-compress"></i> Collapse All</button>
                     </div>
@@ -1659,7 +1680,706 @@
         </main>
     </div>
 
+    <!-- Send Message Modal -->
+    <div id="sendMessageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane" style="color: var(--accent-gold);"></i> Send Message to Agent</h3>
+                <button class="modal-close" onclick="closeSendMessageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select Agent</label>
+                    <div class="agent-select-grid">
+                        <div class="agent-option active" data-agent="waul" onclick="selectAgent('waul')">
+                            <span class="agent-option-emoji">🦊</span>
+                            <div class="agent-option-info">
+                                <span class="agent-option-name">Waul</span>
+                                <span class="agent-option-model">kimi-k2.5:cloud</span>
+                            </div>
+                            <span class="agent-option-cost">~$0.001/call</span>
+                        </div>
+                        <div class="agent-option" data-agent="bobby" onclick="selectAgent('bobby')">
+                            <span class="agent-option-emoji">📊</span>
+                            <div class="agent-option-info">
+                                <span class="agent-option-name">Bobby</span>
+                                <span class="agent-option-model">llama3.2 (Local)</span>
+                            </div>
+                            <span class="agent-option-cost free">FREE</span>
+                        </div>
+                        <div class="agent-option" data-agent="maria" onclick="selectAgent('maria')">
+                            <span class="agent-option-emoji">📝</span>
+                            <div class="agent-option-info">
+                                <span class="agent-option-name">Maria</span>
+                                <span class="agent-option-model">llama3.2 (Local)</span>
+                            </div>
+                            <span class="agent-option-cost free">FREE</span>
+                        </div>
+                        <div class="agent-option" data-agent="tim" onclick="selectAgent('tim')">
+                            <span class="agent-option-emoji">⚙️</span>
+                            <div class="agent-option-info">
+                                <span class="agent-option-name">Tim</span>
+                                <span class="agent-option-model">codex-5.2</span>
+                            </div>
+                            <span class="agent-option-cost">~$0.003/call</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="messageInput">Message</label>
+                    <textarea id="messageInput" class="form-control" rows="4" placeholder="Enter your message to the agent..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="sendToTeam" />
+                        <span>Send to entire team</span>
+                    </label>
+                </div>
+                <div id="sendMessageStatus" class="send-status"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeSendMessageModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendAgentMessage()" id="sendMessageBtn">
+                    <i class="fas fa-paper-plane"></i> Send Message
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Test Panel Modal -->
+    <div id="apiTestModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3><i class="fas fa-vial" style="color: var(--accent-teal);"></i> API Test Panel</h3>
+                <button class="modal-close" onclick="closeApiTestPanel()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="api-test-grid">
+                    <div class="api-test-section">
+                        <h4>Connection Tests</h4>
+                        <div class="test-buttons">
+                            <button class="btn btn-outline" onclick="testAgentConnection('waul')">
+                                <i class="fas fa-plug"></i> Test Waul
+                            </button>
+                            <button class="btn btn-outline" onclick="testAgentConnection('bobby')">
+                                <i class="fas fa-plug"></i> Test Bobby
+                            </button>
+                            <button class="btn btn-outline" onclick="testAgentConnection('maria')">
+                                <i class="fas fa-plug"></i> Test Maria
+                            </button>
+                            <button class="btn btn-outline" onclick="testAgentConnection('tim')">
+                                <i class="fas fa-plug"></i> Test Tim
+                            </button>
+                            <button class="btn btn-primary" onclick="testAllConnections()">
+                                <i class="fas fa-check-double"></i> Test All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="api-test-section">
+                        <h4>Health Report</h4>
+                        <div id="apiHealthReport" class="health-report">
+                            <p style="color: var(--text-muted);">Click "Test All" to generate health report</p>
+                        </div>
+                    </div>
+                    <div class="api-test-section full-width">
+                        <h4>Request Logs <button class="btn btn-sm btn-outline" onclick="clearApiLogs()">Clear</button></h4>
+                        <div id="apiLogsContainer" class="api-logs">
+                            <div class="log-entry">
+                                <span class="log-time">--:--:--</span>
+                                <span class="log-level info">INFO</span>
+                                <span class="log-message">API Test Panel ready. Click test buttons to see logs.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="api-test-section full-width">
+                        <h4>Session History <button class="btn btn-sm btn-outline" onclick="refreshSessionHistory()">Refresh</button></h4>
+                        <div id="apiSessionHistory" class="session-history-list">
+                            <p style="color: var(--text-muted);">No sessions yet. Send a message to see history.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeApiTestPanel()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Styles -->
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: modalSlideIn 0.2s ease;
+        }
+        .modal-content.modal-lg {
+            max-width: 900px;
+        }
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+        .agent-select-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .agent-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .agent-option:hover {
+            border-color: var(--accent-gold);
+        }
+        .agent-option.active {
+            border-color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.1);
+        }
+        .agent-option-emoji {
+            font-size: 24px;
+        }
+        .agent-option-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .agent-option-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .agent-option-model {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .agent-option-cost {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-gold);
+            background: rgba(212, 168, 83, 0.15);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .agent-option-cost.free {
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.15);
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: none !important;
+        }
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-gold);
+        }
+        .send-status {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+        .send-status.active {
+            display: block;
+        }
+        .send-status.success {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+        .send-status.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+        .send-status.sending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid var(--accent-amber);
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .api-test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .api-test-section {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .api-test-section.full-width {
+            grid-column: 1 / -1;
+        }
+        .api-test-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .health-report {
+            font-size: 13px;
+        }
+        .health-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .health-stat:last-child {
+            border-bottom: none;
+        }
+        .api-logs {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .log-time {
+            color: var(--text-muted);
+            min-width: 70px;
+        }
+        .log-level {
+            min-width: 50px;
+            font-weight: 600;
+        }
+        .log-level.info { color: var(--accent-gold); }
+        .log-level.debug { color: var(--accent-teal); }
+        .log-level.warn { color: var(--accent-amber); }
+        .log-level.error { color: var(--accent-red); }
+        .log-message {
+            color: var(--text-secondary);
+            flex: 1;
+        }
+        .session-history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .session-mini-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .session-mini-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .session-mini-status.success { background: var(--accent-green); }
+        .session-mini-status.failed { background: var(--accent-red); }
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .connection-status.online {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+        .connection-status.offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-red);
+        }
+        .connection-status.checking {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+    </style>
+
     <script>
+        // Modal functions
+        let selectedAgent = 'waul';
+        
+        function openSendMessageModal() {
+            document.getElementById('sendMessageModal').classList.add('active');
+            document.getElementById('messageInput').focus();
+        }
+        
+        function closeSendMessageModal() {
+            document.getElementById('sendMessageModal').classList.remove('active');
+            document.getElementById('messageInput').value = '';
+            document.getElementById('sendToTeam').checked = false;
+            hideSendStatus();
+        }
+        
+        function selectAgent(agent) {
+            selectedAgent = agent;
+            document.querySelectorAll('.agent-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector(`.agent-option[data-agent="${agent}"]`).classList.add('active');
+        }
+        
+        function showSendStatus(message, type) {
+            const statusEl = document.getElementById('sendMessageStatus');
+            statusEl.textContent = message;
+            statusEl.className = `send-status active ${type}`;
+        }
+        
+        function hideSendStatus() {
+            const statusEl = document.getElementById('sendMessageStatus');
+            statusEl.classList.remove('active', 'success', 'error', 'sending');
+        }
+        
+        async function sendAgentMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            const sendToTeam = document.getElementById('sendToTeam').checked;
+            const btn = document.getElementById('sendMessageBtn');
+            
+            if (!message) {
+                showSendStatus('Please enter a message', 'error');
+                return;
+            }
+            
+            // Disable button and show sending status
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            showSendStatus('Sending message...', 'sending');
+            
+            try {
+                if (window.api) {
+                    let result;
+                    
+                    if (sendToTeam) {
+                        result = await window.api.teamTask(message);
+                        const successful = result.filter(r => !r.error).length;
+                        showSendStatus(`Message sent to ${successful}/${result.length} agents successfully!`, 'success');
+                    } else {
+                        result = await window.api.sendMessage(selectedAgent, message);
+                        if (result.error) {
+                            showSendStatus(`Error: ${result.error}`, 'error');
+                        } else {
+                            showSendStatus(`Message sent to ${selectedAgent}! Cost: $${result.metadata.cost.toFixed(4)}`, 'success');
+                        }
+                    }
+                    
+                    // Update session tracking
+                    if (window.sessionTracker) {
+                        window.sessionTracker.updateSession(result.session?.id || Date.now(), result.metadata?.tokens || 0, result.metadata?.cost || 0);
+                    }
+                    
+                    // Clear input after success
+                    setTimeout(() => {
+                        document.getElementById('messageInput').value = '';
+                    }, 500);
+                } else {
+                    showSendStatus('API not initialized', 'error');
+                }
+            } catch (e) {
+                showSendStatus(`Error: ${e.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+            }
+        }
+        
+        // API Test Panel functions
+        function openApiTestPanel() {
+            document.getElementById('apiTestModal').classList.add('active');
+            refreshApiLogs();
+            refreshSessionHistory();
+        }
+        
+        function closeApiTestPanel() {
+            document.getElementById('apiTestModal').classList.remove('active');
+        }
+        
+        async function testAgentConnection(agent) {
+            if (!window.api) {
+                addApiLog('error', 'API not initialized');
+                return;
+            }
+            
+            addApiLog('info', `Testing connection to ${agent}...`);
+            const result = await window.api.testConnection(agent);
+            
+            if (result.success) {
+                addApiLog('info', `✓ ${agent} connection successful (${result.result.metadata.duration}ms)`);
+            } else {
+                addApiLog('error', `✗ ${agent} connection failed: ${result.result.error}`);
+            }
+            
+            refreshSessionHistory();
+        }
+        
+        async function testAllConnections() {
+            if (!window.api) {
+                addApiLog('error', 'API not initialized');
+                return;
+            }
+            
+            addApiLog('info', 'Testing all agent connections...');
+            
+            const agents = Object.keys(window.api.agents);
+            const results = [];
+            
+            for (const agent of agents) {
+                const result = await window.api.testConnection(agent);
+                results.push({ agent, ...result });
+            }
+            
+            // Generate health report
+            const report = window.api.getHealthReport();
+            renderHealthReport(report);
+            
+            addApiLog('info', `All tests complete. Success rate: ${report.successRate}%`);
+            refreshSessionHistory();
+        }
+        
+        function renderHealthReport(report) {
+            const container = document.getElementById('apiHealthReport');
+            container.innerHTML = `
+                <div class="health-stat">
+                    <span>Total Sessions</span>
+                    <span>${report.totalSessions}</span>
+                </div>
+                <div class="health-stat">
+                    <span>Successful</span>
+                    <span style="color: var(--accent-green);">${report.successful}</span>
+                </div>
+                <div class="health-stat">
+                    <span>Failed</span>
+                    <span style="color: var(--accent-red);">${report.failed}</span>
+                </div>
+                <div class="health-stat">
+                    <span>Success Rate</span>
+                    <span style="color: ${report.successRate >= 90 ? 'var(--accent-green)' : 'var(--accent-amber)'}">${report.successRate}%</span>
+                </div>
+                <div class="health-stat">
+                    <span>Total Cost</span>
+                    <span style="color: var(--accent-gold);">$${report.totalCost}</span>
+                </div>
+                <div class="health-stat">
+                    <span>Agents</span>
+                    <span>${report.agents.map(a => `${a.emoji} ${a.sessions}`).join(' | ')}</span>
+                </div>
+                ${report.recentErrors.length > 0 ? `
+                    <div style="margin-top: 12px; color: var(--accent-red); font-size: 12px;">
+                        <strong>Recent Errors:</strong>
+                        ${report.recentErrors.map(e => `<div>${e.message}</div>`).join('')}
+                    </div>
+                ` : ''}
+            `;
+        }
+        
+        function addApiLog(level, message) {
+            const container = document.getElementById('apiLogsContainer');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-level ${level}">${level.toUpperCase()}</span>
+                <span class="log-message">${message}</span>
+            `;
+            container.insertBefore(entry, container.firstChild);
+            
+            // Keep only last 50 entries
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        function refreshApiLogs() {
+            if (!window.api) return;
+            
+            const container = document.getElementById('apiLogsContainer');
+            const logs = window.api.getLogs(null, 20);
+            
+            if (logs.length === 0) return;
+            
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry">
+                    <span class="log-time">${new Date(log.timestamp).toLocaleTimeString()}</span>
+                    <span class="log-level ${log.level}">${log.level.toUpperCase()}</span>
+                    <span class="log-message">${log.message}</span>
+                </div>
+            `).reverse().join('');
+        }
+        
+        function clearApiLogs() {
+            if (window.api) {
+                window.api.clearLogs();
+            }
+            document.getElementById('apiLogsContainer').innerHTML = `
+                <div class="log-entry">
+                    <span class="log-time">${new Date().toLocaleTimeString()}</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Logs cleared</span>
+                </div>
+            `;
+        }
+        
+        function refreshSessionHistory() {
+            if (!window.api) return;
+            
+            const container = document.getElementById('apiSessionHistory');
+            const sessions = window.api.getSessionHistory(null, 10);
+            
+            if (sessions.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No sessions yet. Send a message to see history.</p>';
+                return;
+            }
+            
+            container.innerHTML = sessions.map(s => `
+                <div class="session-mini-item">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="session-mini-status ${s.status}"></span>
+                        <span style="font-weight: 500;">${s.agent}</span>
+                        <span style="color: var(--text-muted);">${s.message?.slice(0, 30)}${s.message?.length > 30 ? '...' : ''}</span>
+                    </div>
+                    <div style="display: flex; gap: 12px; color: var(--text-muted);">
+                        <span>${s.tokens} tokens</span>
+                        <span style="color: var(--accent-gold);">$${s.cost?.toFixed(4)}</span>
+                        <span>${new Date(s.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Close modals on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeSendMessageModal();
+                closeApiTestPanel();
+            }
+        });
+        
+        // Close modals on backdrop click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
         // Tab switching with sidebar visibility control
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -2138,4 +2858,63 @@ function quickDeploy() {
 function quickReport() {
     showCostDashboard();
 }
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize core systems
+    window.api = new BeltAPI();
+    window.costMonitor = new CostMonitor();
+    window.sessionTracker = new SessionTracker();
+    window.cronMonitor = new CronMonitor();
+    window.github = new GitHubIntegration();
+    window.imessage = new iMessageBridge();
+    
+    // Wire up cost tracking with API
+    window.api.onUpdate = (logs) => {
+        // Refresh cost display when API updates
+        if (document.getElementById('cost-dashboard-container')) {
+            updateCostDashboard();
+        }
+    };
+    
+    // Set up polling for agent status
+    const statusIndicator = document.getElementById('agent-status-indicator');
+    if (statusIndicator) {
+        window.api.startPolling((status) => {
+            if (status.status === 'offline') {
+                statusIndicator.innerHTML = '<span class="connection-status offline"><i class="fas fa-circle"></i> Agents Offline</span>';
+            } else {
+                statusIndicator.innerHTML = `<span class="connection-status online"><i class="fas fa-circle"></i> ${status.agents?.length || 0} Agents Online</span>`;
+            }
+        }, 30000);
+    }
+    
+    // Initial cost dashboard update
+    setTimeout(() => {
+        updateCostDashboard();
+        if (window.api) {
+            console.log('[BeltOS] API initialized. Use window.api to access the BeltAPI instance.');
+            console.log('[BeltOS] Example: window.api.sendMessage("waul", "Hello")');
+        }
+    }, 100);
+    
+    // Periodic updates
+    setInterval(() => {
+        // Update active session indicators
+        const activeSessions = document.querySelectorAll('.session-item');
+        activeSessions.forEach(session => {
+            const dot = session.querySelector('.status-dot');
+            if (dot) {
+                dot.style.opacity = Math.random() > 0.5 ? '1' : '0.5';
+            }
+        });
+    }, 5000);
+    
+    console.log('[BeltOS] Initialized:', {
+        api: !!window.api,
+        costMonitor: !!window.costMonitor,
+        sessionTracker: !!window.sessionTracker,
+        cronMonitor: !!window.cronMonitor
+    });
+});
 </script>
